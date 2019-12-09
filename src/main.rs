@@ -1,6 +1,6 @@
 extern crate nom;
 use nom::sequence::tuple;
-use parse_bitcoin::parser::{magic_number, block_size, block_header, var_int};
+use parse_bitcoin::parser::{magic_number, block_size, block_header, var_int, transaction};
 use std::io::prelude::*;
 
 
@@ -11,7 +11,7 @@ fn read_file(filename: &str) -> std::io::Result<()>{
     let read_bytes = file.read_exact(&mut buffer)?;
     println!("read bytes: {:?}", read_bytes);
     // let res = magic_number(&buffer);
-    let res = tuple((magic_number, block_size, block_header, var_int)) (&buffer);
+    let res = tuple((magic_number, block_size, block_header, var_int, transaction)) (&buffer);
     println!("res: {:?}", res);
     Ok(())
 }

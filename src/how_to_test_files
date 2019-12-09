@@ -1,0 +1,1 @@
+use xxd -r -p data.hex > data.bin to convert a hexdump from bitcoind to a bin file
