@@ -1,6 +1,11 @@
 extern crate nom;
 use nom::sequence::tuple;
-use parse_bitcoin::parser::{magic_number, block_size, block_header, var_int, transaction};
+use parse_bitcoin::parser::{
+    parse_magic_number,
+    parse_block_size,
+    parse_block_header,
+    parse_var_int,
+    parse_transaction};
 use std::io::prelude::*;
 
 
@@ -11,8 +16,15 @@ fn read_file(filename: &str) -> std::io::Result<()>{
     let read_bytes = file.read_exact(&mut buffer)?;
     println!("read bytes: {:?}", read_bytes);
     // let res = magic_number(&buffer);
-    let res = tuple((magic_number, block_size, block_header, var_int, transaction)) (&buffer);
-    println!("res: {:?}", res);
+    let res = tuple((parse_magic_number, parse_block_size, parse_block_header, parse_var_int, parse_transaction)) (&buffer);
+    println!("res: {:#?}", res);
+    let test: nom::IResult<&[u8], &[u8]> = nom::bytes::complete::take(0u32)(&[0,1,2,3][..]);
+    println!("{:?}", test);
+    let ize = match test {
+        Ok(i) => i,
+        Err(e) => (&[0][..],&[0][..])
+    };
+    println!("ize: {:?}", ize.1.len());
     Ok(())
 }
 

@@ -5,7 +5,7 @@ use nom::sequence::tuple;
 use chrono::prelude::*;
 use std::convert::TryInto;
 
-pub fn magic_number(input: &[u8]) -> IResult<&[u8], &str> {
+pub fn parse_magic_number(input: &[u8]) -> IResult<&[u8], &str> {
     let (i, o) = le_u32(input)?;
     let result = match o {
         0xD9B4BEF9 => "mainnet",
@@ -18,7 +18,7 @@ pub fn magic_number(input: &[u8]) -> IResult<&[u8], &str> {
 }
 
 //without header
-pub fn block_size (input: &[u8]) -> IResult<&[u8], u32> {
+pub fn parse_block_size (input: &[u8]) -> IResult<&[u8], u32> {
     let (i, size) = le_u32(input)?;
     Ok((i, size))
 }
@@ -47,6 +47,7 @@ impl std::fmt::Debug for Hash256 {
     }
 }
 
+#[derive(PartialEq)]
 struct Bytes(Vec<u8>);
 
 impl Bytes {
@@ -58,7 +59,8 @@ impl Bytes {
 impl std::fmt::Debug for Bytes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Bytes(bytes) = self;
-        for byte in bytes.iter().rev() {
+        // for byte in bytes.iter().rev() {
+        for byte in bytes.iter() {
             write!(f, "{:02X}", byte)?
         }
         write!(f, "")
@@ -89,7 +91,7 @@ pub struct BlockHeader {
     }
 }
 
-pub fn block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
+pub fn parse_block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
     let (i, (
         version,
         prev_block_hash,
@@ -116,7 +118,7 @@ pub fn block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
     )))
 }
 
-pub fn var_int(input: &[u8]) -> IResult<&[u8], u64> {
+pub fn parse_var_int(input: &[u8]) -> IResult<&[u8], u64> {
     let (i, o) = le_u8(input)?;
     if o == 0xFD {
         let (i, o) = le_u16(i)?;
@@ -150,13 +152,13 @@ impl TxInput {
     }
 }
 
-fn tx_inputs(input: &[u8]) -> IResult<&[u8], Vec<TxInput>> {
-    let (mut input, in_count) = var_int(input)?;
+fn parse_tx_inputs(input: &[u8]) -> IResult<&[u8], Vec<TxInput>> {
+    let (mut input, in_count) = parse_var_int(input)?;
     let mut vec: Vec<TxInput> = Vec::with_capacity(in_count as usize);
     for _ in 0..in_count {
         let (i, previos_tx_hash) = take(32u32)(input)?;
         let (i, vout) = le_u32(i)?;
-        let (i, script_len) = var_int(i)?;
+        let (i, script_len) = parse_var_int(i)?;
         let (i, script_sig) = take(script_len)(i)?;
         // println!("script_sig: {}", String::from_utf8_lossy(script_sig));
         let (i, sequence) = take(4u32)(i)?;
@@ -171,37 +173,117 @@ fn tx_inputs(input: &[u8]) -> IResult<&[u8], Vec<TxInput>> {
     Ok((input, vec))
 }
 
-// pub struct TxOutput {
-//     value: u64,
-//     scriptPubKey: Bytes
-// }
-//
-// pub struct Witness {
-//     implement: bool
-// }
+#[derive(Debug)]
+pub struct TxOutput {
+    value: u64,
+    script_pub_key: Bytes
+}
+
+impl TxOutput {
+    fn new(value: u64, spk: &[u8]) -> TxOutput {
+        TxOutput {
+            value,
+            script_pub_key: Bytes::new(spk)
+        }
+    }
+}
+
+fn parse_tx_outputs(input: &[u8]) -> IResult<&[u8], Vec<TxOutput>> {
+    let (mut input, out_count) = parse_var_int(input)?;
+    let mut vec: Vec<TxOutput> = Vec::with_capacity(out_count as usize);
+    for _ in 0..out_count {
+        let (i, value) = le_u64(input)?;
+        let (i, script_len) = parse_var_int(i)?;
+        let (i, script_pub_key) = take(script_len)(i)?;
+        input = i;
+        vec.push(TxOutput::new(
+            value,
+            script_pub_key
+        ));
+    }
+    Ok((input, vec))
+}
+
+#[derive(Debug,PartialEq)]
+pub struct Witness(Option<Bytes>);
+
+impl Witness {
+    fn new(slice: &[u8]) -> Witness {
+        let witness = match slice.len() {
+            0 => None,
+            _ => Some(Bytes::new(slice))
+        };
+        Witness(witness)
+    }
+}
+
+fn parse_witnesses(input: &[u8]) -> IResult<&[u8], Vec<Witness>> {
+    let (mut input, witness_count) = parse_var_int(input)?;
+    let mut vec: Vec<Witness> = Vec::with_capacity(witness_count as usize);
+    for _ in 0..witness_count {
+        let (i, witness_len) = parse_var_int(input)?;
+        let (i, witness) = take(witness_len)(i)?;
+        input = i;
+        vec.push(Witness::new(witness))
+    }
+    Ok((input, vec))
+}
 
 #[derive(Debug)]
 pub struct Transaction {
     version: u32,
-    witness_data: bool,
-    in_count: u64,
+    in_count: usize,
     inputs: Vec<TxInput>,
-    // out_count: u32,
-    // outputs: Vec<TxOutput>,
-    // witnesses: Option<Vec<Witness>>,
-    // lock_time: Bytes
+    out_count: usize,
+    outputs: Vec<TxOutput>,
+    witnesses: Option<Vec<Witness>>,
+    lock_time: u32
 }
 
-pub fn transaction (input: &[u8]) -> IResult<&[u8], Transaction> {
-    let (i,version) = le_u32(input)?;
-    let res : IResult<&[u8], &[u8]> = tag([0x00,0x01])(i);
-    let (i, witness_data) = match res {
-        Ok((i, _)) => (i, true),
-        Err(_) => (i, false)
+impl Transaction {
+    fn new (version: u32, in_count: usize, inputs: Vec<TxInput>,
+            out_count: usize, outputs: Vec<TxOutput>, witnesses: Option<Vec<Witness>>,
+            lock_time: u32) -> Transaction {
+        Transaction {
+            version,
+            in_count,
+            inputs,
+            out_count,
+            outputs,
+            witnesses,
+            lock_time
+        }
+    }
+}
+
+pub fn parse_transaction (input: &[u8]) -> IResult<&[u8], Transaction> {
+    let (input,version) = le_u32(input)?;
+    let res : IResult<&[u8], &[u8]> = tag([0x00,0x01])(input);
+    let (input, witness_data) = match res {
+        Ok((input, _)) => (input, true),
+        Err(_) => (input, false)
     };
-    let (i, in_count) = var_int(i)?; //has to be deleted and in_count will be te length of Vec
-    let (i, inputs) = tx_inputs(i)?;
-    Ok((i,Transaction{version, witness_data, in_count, inputs}))
+    let (input, inputs) = parse_tx_inputs(input)?;
+    let in_count = inputs.len();
+    let (mut input, outputs) = parse_tx_outputs(input)?;
+    let out_count = outputs.len();
+    let witnesses = if witness_data == true {
+        let (i, witnesses) = parse_witnesses(input)?;
+        input = i;
+        Some(witnesses)
+    } else {
+        None
+    };
+    let (input, lock_time) = le_u32(input)?;
+    Ok((input,Transaction::new(
+        version,
+        in_count,
+        inputs,
+        out_count,
+        outputs,
+        witnesses,
+        lock_time
+    )))
 }
 
 #[cfg(test)]
@@ -209,20 +291,20 @@ mod tests {
     use super::*;
     use hex;
     #[test]
-    fn test_var_int() {
-        assert_eq!(var_int(&[0xFA][..]), Ok((&[][..],0xFAu64)));
-        assert_eq!(var_int(&[0xFA,0xAA][..]), Ok((&[0xAA][..],0xFAu64)));
-        assert_eq!(var_int(&[0xFD,0xAA,0xBB][..]), Ok((&[][..],0xBBAAu64)));
-        assert_eq!(var_int(&[0xFD,0xAA,0xBB, 0xCC][..]), Ok((&[0xCC][..],0xBBAAu64)));
-        assert_eq!(var_int(&[0xFE,0xAA,0xBB, 0xCC, 0xDD][..]), Ok((&[][..],0xDDCCBBAAu64)));
-        assert_eq!(var_int(&[0xFE,0xAA,0xBB, 0xCC, 0xDD, 0xEE][..]), Ok((&[0xEE][..],0xDDCCBBAAu64)));
-        assert_eq!(var_int(&[0xFF,0xAA,0xBB, 0xCC, 0xDD,0xEE, 0xFF,0x10, 0x09][..]), Ok((&[][..],0x0910FFEEDDCCBBAAu64)));
-        assert_eq!(var_int(&[0xFF,0xAA,0xBB, 0xCC, 0xDD,0xEE, 0xFF,0x10, 0x09,0x08][..]), Ok((&[0x08][..],0x0910FFEEDDCCBBAAu64)));
+    fn test_parse_var_int() {
+        assert_eq!(parse_var_int(&[0xFA][..]), Ok((&[][..],0xFAu64)));
+        assert_eq!(parse_var_int(&[0xFA,0xAA][..]), Ok((&[0xAA][..],0xFAu64)));
+        assert_eq!(parse_var_int(&[0xFD,0xAA,0xBB][..]), Ok((&[][..],0xBBAAu64)));
+        assert_eq!(parse_var_int(&[0xFD,0xAA,0xBB, 0xCC][..]), Ok((&[0xCC][..],0xBBAAu64)));
+        assert_eq!(parse_var_int(&[0xFE,0xAA,0xBB, 0xCC, 0xDD][..]), Ok((&[][..],0xDDCCBBAAu64)));
+        assert_eq!(parse_var_int(&[0xFE,0xAA,0xBB, 0xCC, 0xDD, 0xEE][..]), Ok((&[0xEE][..],0xDDCCBBAAu64)));
+        assert_eq!(parse_var_int(&[0xFF,0xAA,0xBB, 0xCC, 0xDD,0xEE, 0xFF,0x10, 0x09][..]), Ok((&[][..],0x0910FFEEDDCCBBAAu64)));
+        assert_eq!(parse_var_int(&[0xFF,0xAA,0xBB, 0xCC, 0xDD,0xEE, 0xFF,0x10, 0x09,0x08][..]), Ok((&[0x08][..],0x0910FFEEDDCCBBAAu64)));
     }
     #[test]
-    fn test_tx_input() {
-        let tx = include_bytes!("tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.input.bin");
-        let (_, inputs) = tx_inputs(tx).unwrap();
+    fn test_parse_tx_inputs() {
+        let data = include_bytes!("tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.input.bin");
+        let (_, inputs) = parse_tx_inputs(data).unwrap();
         assert_eq!(inputs.len(),5);
         //test_input!(input, input_index, "hash",vout,"scriptsig","sequence")
         macro_rules! test_input {
@@ -273,5 +355,50 @@ mod tests {
             "473044022075c22dbd96f00c265d8eef217b9c48692334e6cca0c1a49c760b7e47a6273c8202203b25a16ba1aeb6626e4655fbc782253ba1d2666ccdd72638503c1d055d4eeb40012102e162d3d6f52b56dbf59f35ea977d5683b546105fbc9a638b64262192b9ed2da4",
             "ffffffff"
         );
+    }
+    #[test]
+    fn test_parse_tx_outputs(){
+        let data = include_bytes!("tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.output.bin");
+        let (_, outputs) = parse_tx_outputs(data).unwrap();
+        println!("{:#?}", outputs);
+        assert_eq!(outputs.len(), 2);
+        //test_output(output, value, script_pub_key)
+        macro_rules! test_output {
+            ($output:expr, $value:expr, $script_pub_key:expr) => {
+                {
+                    assert_eq!($output.value,$value);
+                    let Bytes(script_pub_key) = &$output.script_pub_key;
+                    assert_eq!(hex::encode(script_pub_key), $script_pub_key)
+                }
+            };
+        }
+        test_output!(outputs[0], 7357023, "a91430897cc6c9d69f6a2c2f1c651d51f22219f1a4f687");
+        test_output!(outputs[1], 28734702, "a914fa68aba99b21ce4bba393eacc17305fe12f9021b87");
+    }
+    #[test]
+    fn test_parse_witnesses() {
+        let data = include_bytes!("tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.witnesses.bin");
+        let (_, witnesses) = parse_witnesses(data).unwrap();
+        // println!("{:#?}", witnesses );
+        assert_eq!(witnesses.len(), 4);
+        //test_witness(witness, "" | "witness_script";
+        macro_rules! test_witness {
+            ($witness:expr, $witness_script:expr) => {
+                {
+                    match $witness {
+                        Witness(None) => {
+                            assert_eq!("", $witness_script);
+                        }
+                        Witness(Some(Bytes(bytes))) => {
+                            assert_eq!(hex::encode(bytes), $witness_script)
+                        }
+                    }
+                }
+            }
+        };
+        test_witness!(&witnesses[0], "");
+        test_witness!(&witnesses[1], "3045022100aa2570dde15cdcb834e3490b8d10787decf3c0f6c388e949177d3531e99068c9022053a2decd7f5859cd5f2a583c8c12ba621f09721b3bc74a64d362bb9c2d57b27e01");
+        test_witness!(&witnesses[2], "304402200da46260a1a6b6e7fe0e23372adcf7e9569c9f27501728a5d61ab4a3c74732b302200790fb7ce382c742b8e23f53c302b19a33cba9d68a83f33974b971511e2c712e01");
+        test_witness!(&witnesses[3], "5221026c8f72b9e63db63907115e65d4da86eaae595b22fdc85ec75301bb4adbf203582103806535be3e3920e5eedee92de5714188fd6a784f2bf7b04f87de0b9c3ae1ecdb21024b23bfdce2afcae7e28c42f7f79aa100f22931712c52d7414a526ba494d44a2553ae");
     }
 }
