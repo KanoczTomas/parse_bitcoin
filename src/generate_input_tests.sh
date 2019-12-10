@@ -8,7 +8,7 @@ fi
 file=$1
 
 n=0
-for input in $(cat $file |grep -v getrawtransaction|jq '.vin[] | [ .txid, .vout, .scriptSig.hex, .sequence ] | @csv' | sed 's/[\\]*"//g');do 
+for input in $(cat $file |grep -v '^#' |jq '.vin[] | [ .txid, .vout, .scriptSig.hex, .sequence ] | @csv' | sed 's/[\\]*"//g');do 
   txid=$(echo $input|cut -d, -f1)
   vout=$(echo $input|cut -d, -f2)
   scriptSig=$(echo $input|cut -d, -f3)

@@ -8,7 +8,7 @@ if [[ $# -ne 1 ]];then
 fi
 
 file=$1
-jq="cat $file | grep -v getraw | jq "
+jq="cat $file | grep -v \'^#\' | jq "
 
 echo -en "let data = include_bytes!(\"$(echo $file|sed 's/\.rpc/\.bin/g')\");\n"
 echo "let (_, tx) = parse_transaction(data).unwrap();"
