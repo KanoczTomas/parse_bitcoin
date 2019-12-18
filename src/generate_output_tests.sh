@@ -6,13 +6,21 @@ if [[ $# -ne 1 ]];then
 fi
 
 file=$1
+json=$(cat $file|grep -v '^#')
 
-n=0
-for input in $(cat $file |grep -v '^#'|jq '.vout[] | [ .value, .scriptPubKey.hex ] | @csv' | sed 's/[\\]*"//g');do 
-  value=$(echo $input|cut -d, -f1)
-  scriptPubKey=$(echo $input|cut -d, -f2)
+function generate_test_output(){
+  local index=$1
+  local value=$2
+  local scriptPubKey=$3
   value=$(echo "$value*100000000"|bc)
   value=${value%.*}
   echo -en "test_output!(outputs[$n], $value, \"$scriptPubKey\");\n"
+}
+
+n=0
+for output in $(echo $json | jq '.vout[] | [ .value, .scriptPubKey.hex ] | @csv' | sed 's/[\\]*"//g');do
+  value=$(echo $output|cut -d, -f1)
+  scriptPubKey=$(echo $output|cut -d, -f2)
+  generate_test_output $n $value $scriptPubKey
   let n++
 done
