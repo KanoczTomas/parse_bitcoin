@@ -1,15 +1,16 @@
-extern crate nom;
-use nom::sequence::tuple;
-use nom::multi::many_till;
-use nom::bytes::complete::take;
-use nom::combinator::peek;
-use parse_bitcoin::parser::{
-    parse_magic_number,
-    parse_block_size,
-    parse_block_header,
-    parse_var_int,
-    parse_transaction,
-    parse_block};
+// extern crate nom;
+// use nom::sequence::tuple;
+// use nom::multi::many_till;
+// use nom::bytes::complete::take;
+// use nom::combinator::peek;
+// use parse_bitcoin::parser::{
+//     parse_magic_number,
+//     parse_block_size,
+//     parse_block_header,
+//     parse_var_int,
+//     parse_transaction,
+//     parse_block};
+use parse_bitcoin::parsers::parse_block;
 use std::io::prelude::*;
 
 

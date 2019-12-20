@@ -1,2 +1,2 @@
-extern crate nom;
-pub mod parser;
+pub mod parsers;
+pub mod types;

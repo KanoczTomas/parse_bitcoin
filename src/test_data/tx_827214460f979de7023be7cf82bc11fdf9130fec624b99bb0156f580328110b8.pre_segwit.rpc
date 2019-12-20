@@ -1,0 +1,52 @@
+#getrawtransaction 827214460f979de7023be7cf82bc11fdf9130fec624b99bb0156f580328110b8 true 0000000000003a8fa390d8a1f8d70fd11a642b4e848c5c93a50e2535774bfa1e
+{                                                                                                                                                                                                                                                                                "in_active_chain": true,                                                                                                                                                                                                                                                       "txid": "827214460f979de7023be7cf82bc11fdf9130fec624b99bb0156f580328110b8",                                                                                                                                                                                                    "hash": "827214460f979de7023be7cf82bc11fdf9130fec624b99bb0156f580328110b8",                                                                                                                                                                                                    "version": 1,                                                                                                                                                                                                                                                                
+  "size": 257,
+  "vsize": 257,
+  "weight": 1028,
+  "locktime": 0,
+  "vin": [
+    {
+      "txid": "a9475fd2e6089e138b0cd16a7bec574da3ae5a4ac5a212b82aac21d30739c0bd",
+      "vout": 0,
+      "scriptSig": {
+        "asm": "3044022059ef25a8cb0fb2eb097ad3c8b1bed25cfcfa1f606a1ac47cbd5dc0ff688004ad022034418df4599122e387d62b3ae6c1131894509e460afd34d514405fcb6a25fbf8[ALL] 04075407496e07c698ec874c70db70f3d01d098fc1756d2e070cb97246492b47e8e2e7fabb8c0703c99ed0e728a5676a4620a79126fa5f2c9aa9474371f5c3b7ab",
+        "hex": "473044022059ef25a8cb0fb2eb097ad3c8b1bed25cfcfa1f606a1ac47cbd5dc0ff688004ad022034418df4599122e387d62b3ae6c1131894509e460afd34d514405fcb6a25fbf8014104075407496e07c698ec874c70db70f3d01d098fc1756d2e070cb97246492b47e8e2e7fabb8c0703c99ed0e728a5676a4620a79126fa5f2c9aa9474371f5c3b7ab"
+      },
+      "sequence": 4294967295
+    }
+  ],
+  "vout": [
+    {
+      "value": 1.94000000,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "OP_DUP OP_HASH160 6be6bb0554c1f482c529d018de7da3b039b5ec11 OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a9146be6bb0554c1f482c529d018de7da3b039b5ec1188ac",
+        "reqSigs": 1,
+        "type": "pubkeyhash",
+        "addresses": [
+          "1AqXhy12dNN6aC5qgmQJ9SDNdkAgVwJJxj"
+        ]
+      }
+    },
+    {
+      "value": 0.01000000,
+      "n": 1,
+      "scriptPubKey": {
+        "asm": "OP_DUP OP_HASH160 e110891bfbb319c04762169d3885203b6eb9a252 OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a914e110891bfbb319c04762169d3885203b6eb9a25288ac",
+        "reqSigs": 1,
+        "type": "pubkeyhash",
+        "addresses": [
+          "1MX2r5JyiVLqa7WyTGumKqNuySFwRz3gqL"
+        ]
+      }
+    }
+  ],
+  "hex": "0100000001bdc03907d321ac2ab812a2c54a5aaea34d57ec7b6ad10c8b139e08e6d25f47a9000000008a473044022059ef25a8cb0fb2eb097ad3c8b1bed25cfcfa1f606a1ac47cbd5dc0ff688004ad022034418df4599122e387d62b3ae6c1131894509e460afd34d514405fcb6a25fbf8014104075407496e07c698ec874c70db70f3d01d098fc1756d2e070cb97246492b47e8e2e7fabb8c0703c99ed0e728a5676a4620a79126fa5f2c9aa9474371f5c3b7abffffffff028034900b000000001976a9146be6bb0554c1f482c529d018de7da3b039b5ec1188ac40420f00000000001976a914e110891bfbb319c04762169d3885203b6eb9a25288ac00000000",
+  "blockhash": "0000000000003a8fa390d8a1f8d70fd11a642b4e848c5c93a50e2535774bfa1e",
+  "confirmations": 481773, 
+  "time": 1306074865,
+  "blocktime": 1306074865  
+}
+

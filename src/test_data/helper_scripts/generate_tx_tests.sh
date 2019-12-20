@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#!/bin/bash
-
 if [[ $# -ne 1 ]];then
   echo "usage: $0 <file.rpc>"
   exit 1
 fi
 
+#from the point of view of the test itself (parsers dir for example)
+test_data_dir="../test_data/"
 file=$1
 json=$(cat $file | grep -v '^#')
 coinbase=$(echo $json | jq '.vin[0].coinbase'|tr -d '"')
@@ -28,7 +28,7 @@ function generate_tx_tests(){
   local locktime=$3
   local inputs_count=$4
   local outputs_count=$5
-  echo -en "let data = include_bytes!(\"$(echo $file|sed 's/\.rpc/\.bin/g')\");\n"
+  echo -en "let data = include_bytes!(\"$test_data_dir$(echo $file|sed 's/\.rpc/\.bin/g')\");\n"
   echo "let (_, tx) = parse_transaction(data).unwrap();"
   echo "assert_eq!(tx.version, $version);"
   echo "assert_eq!(tx.lock_time, $locktime);"

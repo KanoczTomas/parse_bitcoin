@@ -1,0 +1,60 @@
+#getrawtransaction 982e0cea72b4f599e09f3556d649518608385fcf269e811fa7ed51d7e4f5241c true 0000000000000000000b0a682f47f187a712c42badd4ca1989c494d401457c3f
+{
+  "in_active_chain": true,
+  "txid": "982e0cea72b4f599e09f3556d649518608385fcf269e811fa7ed51d7e4f5241c",
+  "hash": "a21c5baeaa88a7ca26a7fa73d52fb85eb8cbe646546e05c14c592aba768cbc8c",
+  "version": 2,
+  "size": 249,
+  "vsize": 168,
+  "weight": 669,
+  "locktime": 607785,
+  "vin": [
+    {
+      "txid": "e4d01d6fdf6ecefb7a4366d2a43e5b463218b816cdc6315588b033d9ce4d9763",
+      "vout": 31,
+      "scriptSig": {
+        "asm": "0014c3447428dee50d786fea673c6a0fc32f665a3da8",
+        "hex": "160014c3447428dee50d786fea673c6a0fc32f665a3da8"
+      },
+      "txinwitness": [
+        "304402204ede3bae0185c9c2553936ff10d8daadca99b504ac5bc486a367ef6fa978132a022035398a5365be1a21fc315c0f6d4ddcce059ce876a2ff9119f86a2728d71b5cda01",
+        "02d1c1634a5f48c59ffda1e453a0286fce38514140b63aec09c35c3f4ffa0756bb"
+      ],
+      "sequence": 4294967293
+    }
+  ],
+  "vout": [
+    {
+      "value": 2.12948850,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "OP_DUP OP_HASH160 d89793719a269a2bb180886a95d3a5d83c3adc88 OP_EQUALVERIFY OP_CHECKSIG",
+        "hex": "76a914d89793719a269a2bb180886a95d3a5d83c3adc8888ac",
+        "reqSigs": 1,
+        "type": "pubkeyhash",
+        "addresses": [
+          "1LkEY7o8WmC7fdJTZWMWSYJVzhZJPeQKk2"
+        ]
+      }
+    },
+    {
+      "value": 0.19332281,
+      "n": 1,
+      "scriptPubKey": {
+        "asm": "OP_HASH160 2c90f403bd58916e85ec98b3c4f9ba7dc0e4e76e OP_EQUAL",
+        "hex": "a9142c90f403bd58916e85ec98b3c4f9ba7dc0e4e76e87",
+        "reqSigs": 1,
+        "type": "scripthash",
+        "addresses": [
+          "35kfJWQzLR5RMNoQmroaGo96X8pxmeFsiv"
+        ]
+      }
+    }
+  ],
+  "hex": "0200000000010163974dced933b0885531c6cd16b81832465b3ea4d266437afbce6edf6f1dd0e41f00000017160014c3447428dee50d786fea673c6a0fc32f665a3da8fdffffff027257b10c000000001976a914d89793719a269a2bb180886a95d3a5d83c3adc8888acb9fc26010000000017a9142c90f403bd58916e85ec98b3c4f9ba7dc0e4e76e870247304402204ede3bae0185c9c2553936ff10d8daadca99b504ac5bc486a367ef6fa978132a022035398a5365be1a21fc315c0f6d4ddcce059ce876a2ff9119f86a2728d71b5cda012102d1c1634a5f48c59ffda1e453a0286fce38514140b63aec09c35c3f4ffa0756bb29460900",
+  "blockhash": "0000000000000000000b0a682f47f187a712c42badd4ca1989c494d401457c3f",
+  "confirmations": 156,
+  "time": 1576151029,
+  "blocktime": 1576151029
+}
+
