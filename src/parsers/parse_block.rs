@@ -28,7 +28,7 @@ mod test {
     use super::*;
     #[test]
     fn test_parse_block (){
-        let data = include_bytes!("../test_data/blk.0000000000000000000b0a682f47f187a712c42badd4ca1989c494d401457c3f.bin");
+        let data = include_bytes!("../test_data/blk_0000000000000000000b0a682f47f187a712c42badd4ca1989c494d401457c3f.bin");
         let (_, block) = parse_block(data).unwrap();
         assert_eq!(block.transactions.len(),2996);
         // let res = parse_block_header(data);

@@ -5,12 +5,13 @@ use std::convert::TryInto;
 
 #[derive(Debug)]
 pub struct BlockHeader {
-    version: u32,
-    prev_block_hash: Hash256,
-    merkle_root_hash: Hash256,
-    time: String,
-    bits: Bytes,
-    nonce: Bytes
+    pub version: u32,
+    pub prev_block_hash: Hash256,
+    pub merkle_root_hash: Hash256,
+    pub time_str: String,
+    pub time: u32,
+    pub bits: Bytes,
+    pub nonce: Bytes
 }
 
  impl BlockHeader {
@@ -19,7 +20,8 @@ pub struct BlockHeader {
             version: v,
             prev_block_hash: Hash256::new(pbh),
             merkle_root_hash: Hash256::new(mrh),
-            time: chrono::Utc.timestamp(t.try_into().unwrap(), 0u32).to_rfc2822(),
+            time: t,
+            time_str: chrono::Utc.timestamp(t.try_into().unwrap(), 0u32).to_rfc2822(),
             bits: Bytes::new(b),
             nonce: Bytes::new(n)
         }

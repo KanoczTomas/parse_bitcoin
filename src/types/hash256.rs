@@ -1,7 +1,7 @@
-
+use std::cmp::PartialEq;
 
 //warning LE on wire, keeping format!
-// #[derive(Debug)]
+#[derive(PartialEq)]
 pub struct Hash256(pub [u8;32]);
 
 
