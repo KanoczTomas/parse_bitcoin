@@ -28,8 +28,13 @@ function generate_tx_tests(){
   local locktime=$3
   local inputs_count=$4
   local outputs_count=$5
-  echo -en "let data = include_bytes!(\"$test_data_dir$(echo $file|sed 's/\.rpc/\.bin/g')\");\n"
+  local txid=$6
+  local wtxid=$7
+  [ "$wtxid" == "null" ] && wtxid=$txid
+  echo -en "let data = include_bytes!(\"$test_data_dir$(echo $file|sed 's/^..\///;s/\.rpc/\.bin/g')\");\n"
   echo "let (_, tx) = parse_transaction(data).unwrap();"
+  echo "assert_eq!(tx.txid, Hash256::new(&hex::decode(\"$(echo $txid|./endian.sh)\").unwrap()));"
+  echo "assert_eq!(tx.wtxid, Hash256::new(&hex::decode(\"$(echo $wtxid|./endian.sh)\").unwrap()));"
   echo "assert_eq!(tx.version, $version);"
   echo "assert_eq!(tx.lock_time, $locktime);"
   echo "assert_eq!(tx.inputs.len(), $inputs_count);"
@@ -55,5 +60,7 @@ version=$(echo $json | jq '.version')
 locktime=$(echo $json | jq '.locktime')
 inputs_count=$(echo $json | jq '.vin | length')
 outputs_count=$(echo $json | jq '.vout | length')
+txid=$(echo $json | jq '.txid' | tr -d '"')
+wtxid=$(echo $json | jq '.hash' | tr -d '"')
 
-generate_tx_tests $file $version $locktime $inputs_count $outputs_count
+generate_tx_tests $file $version $locktime $inputs_count $outputs_count $txid $wtxid

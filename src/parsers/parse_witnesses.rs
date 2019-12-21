@@ -3,7 +3,8 @@ use nom::bytes::complete::take;
 use crate::types::Witness;
 use crate::parsers::parse_var_int;
 
-pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], Vec<Witness>> {
+pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], (Vec<Witness>, usize)> {
+    let len_start = input.len();
     let mut vec = Vec::new();
     let (mut input, witness_count) = parse_var_int(input)?;
     if witness_count == 0 {
@@ -17,7 +18,8 @@ pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], Vec<Witness>> {
             input = i;
         }
     }
-    Ok((input, vec))
+    let witnesses_raw_size = len_start - input.len();
+    Ok((input, (vec, witnesses_raw_size)))
 }
 
 #[cfg(test)]
@@ -44,7 +46,8 @@ mod test {
     #[test]
     fn test_parse_witnesses() {
         let data = include_bytes!("../test_data/tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.witnesses.bin");
-        let (_, witnesses) = parse_witnesses(data).unwrap();
+        let (_, (witnesses, size)) = parse_witnesses(data).unwrap();
+        assert_eq!(size, data.len());
         assert_eq!(witnesses.len(), 4);
         test_witness!(&witnesses[0], "");
         test_witness!(&witnesses[1], "3045022100aa2570dde15cdcb834e3490b8d10787decf3c0f6c388e949177d3531e99068c9022053a2decd7f5859cd5f2a583c8c12ba621f09721b3bc74a64d362bb9c2d57b27e01");

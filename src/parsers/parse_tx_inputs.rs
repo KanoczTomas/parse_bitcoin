@@ -5,18 +5,20 @@ use crate::types::TxInput;
 use crate::parsers::parse_var_int;
 
 
-pub fn parse_tx_inputs(input: &[u8]) -> IResult<&[u8], Vec<TxInput>> {
+pub fn parse_tx_inputs(input: &[u8]) -> IResult<&[u8], (Vec<TxInput>, usize)> {
+    let len_start = input.len();
     let (mut input, in_count) = parse_var_int(input)?;
     let mut vec: Vec<TxInput> = Vec::with_capacity(in_count as usize);
     for _ in 0..in_count {
+        let len_start = input.len();
         let (i, previos_tx_hash) = take(32u32)(input)?;
         let (i, vout) = le_u32(i)?;
         let (i, script_len) = parse_var_int(i)?;
         let (i, script_sig) = take(script_len)(i)?;
         // println!("script_sig: {}", String::from_utf8_lossy(script_sig));
-        // let (i, sequence) = take(4u32)(i)?;
         let (i, sequence) = le_u32(i)?;
         input = i;
+        let len_end = input.len();
         vec.push(TxInput::new(
             previos_tx_hash,
             vout,
@@ -24,7 +26,8 @@ pub fn parse_tx_inputs(input: &[u8]) -> IResult<&[u8], Vec<TxInput>> {
             sequence
         ));
     }
-    Ok((input, vec))
+    let inputs_raw_size = len_start - input.len();
+    Ok((input, (vec, inputs_raw_size)))
 }
 
 
@@ -50,7 +53,8 @@ pub mod test {
     #[test]
     fn test_parse_tx_inputs() {
         let data = include_bytes!("../test_data/tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.input.bin");
-        let (_, inputs) = parse_tx_inputs(data).unwrap();
+        let (_, (inputs, size)) = parse_tx_inputs(data).unwrap();
+        assert_eq!(size, data.len());
         assert_eq!(inputs.len(),5);
         test_input!(
             &inputs[0],

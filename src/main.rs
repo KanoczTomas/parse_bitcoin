@@ -57,10 +57,10 @@ fn read_file(filename: &str) -> std::io::Result<()>{
 
 fn main() {
     // match read_file("/home/tk/bin/bisq/docs/autosetup-regtest-dao/regtest/blocks/blk00000.dat") {
-    match read_file("/home/tk/.bitcoin/blocks/blk01893.dat") {
+    match read_file("/home/tk/.bitcoin/blocks/blk01903.dat") {
     // match read_file(".gitignore") {
         Ok(_) => println!("all went fine!"),
-        Err(e) => println!("Error is e")
-        // Err(e) => println!("Error is {:?}",e)
+        // Err(e) => println!("Error is e")
+        Err(e) => println!("Error is {:?}",e)
     }
 }

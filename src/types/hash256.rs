@@ -19,6 +19,10 @@ impl Hash256 {
         }
         false
     }
+    pub fn copy(&self) -> Hash256 {
+        let Hash256(hash) = self;
+        Hash256::new(&hash[..])
+    }
 }
 
 //we print the hash in BE, as that is how bitcoind and block explorers show it
