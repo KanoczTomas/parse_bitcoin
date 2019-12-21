@@ -1,5 +1,5 @@
 use nom::IResult;
-use crate::types::{Block};
+use crate::types::Block;
 use crate::parsers::{parse_block_header, parse_var_int, parse_transaction};
 
 pub fn parse_block(input: &[u8]) -> IResult<& [u8], Block> {
