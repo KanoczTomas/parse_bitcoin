@@ -4,6 +4,7 @@ use nom::number::complete::le_u8;
 use crate::parsers::parse_magic_number;
 
 pub fn find_block_start(mut input: &[u8]) -> IResult<&[u8], Option<&str>> {
+    //move per byte untill magic number is found
     loop {
         match peek(parse_magic_number)(input)?.1 {
             Some(_) => {

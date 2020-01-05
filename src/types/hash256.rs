@@ -1,7 +1,9 @@
 use std::cmp::PartialEq;
+use std::default::Default;
+use std::convert::AsRef;
 
 //warning LE on wire, keeping format!
-#[derive(PartialEq)]
+#[derive(PartialEq,Copy,Clone)]
 pub struct Hash256(pub [u8;32]);
 
 
@@ -19,10 +21,6 @@ impl Hash256 {
         }
         false
     }
-    pub fn copy(&self) -> Hash256 {
-        let Hash256(hash) = self;
-        Hash256::new(&hash[..])
-    }
 }
 
 //we print the hash in BE, as that is how bitcoind and block explorers show it
@@ -33,5 +31,18 @@ impl std::fmt::Debug for Hash256 {
             write!(f, "{:02X}", byte)?
         }
         write!(f, "")
+    }
+}
+
+impl Default for Hash256 {
+    fn default() -> Hash256 {
+        Hash256::new(&[0u8;32][..])
+    }
+}
+
+impl AsRef<[u8]> for Hash256 {
+    fn as_ref(&self) -> &[u8] {
+        let Hash256(hash) = self;
+        &hash[..]
     }
 }

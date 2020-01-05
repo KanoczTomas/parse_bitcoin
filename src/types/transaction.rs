@@ -8,13 +8,14 @@ pub struct Transaction {
     pub witnesses: Option<Vec<Vec<Witness>>>,
     pub lock_time: u32,
     pub txid: Hash256,
-    pub wtxid: Hash256
+    pub wtxid: Hash256,
+    pub size: usize
 }
 
 impl Transaction {
     pub fn new (version: u32, inputs: Vec<TxInput>,
             outputs: Vec<TxOutput>, witnesses: Option<Vec<Vec<Witness>>>,
-            lock_time: u32, txid: Hash256, wtxid: Hash256) -> Transaction {
+            lock_time: u32, txid: Hash256, wtxid: Hash256, size: usize) -> Transaction {
         Transaction {
             version,
             inputs,
@@ -22,7 +23,8 @@ impl Transaction {
             witnesses,
             lock_time,
             txid,
-            wtxid
+            wtxid,
+            size
         }
     }
 }

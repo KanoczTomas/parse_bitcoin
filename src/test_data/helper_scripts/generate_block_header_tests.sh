@@ -19,6 +19,7 @@ function generate_block_header_tests(){
   local time=$4
   local bits=$5
   local nonce=$6
+  local hash=$7
 
   echo -en "let data = include_bytes!(\"$test_data_dir$(echo $file|sed 's/^..\///;s/\.rpc/\.bin/g')\");\n"
   echo -en "let (_, header) = parse_block_header(data).unwrap();\n"
@@ -28,6 +29,7 @@ function generate_block_header_tests(){
   echo -en "assert_eq!(header.time, $time);\n"
   echo -en "assert_eq!(header.bits, Bytes::new(&hex::decode(\"$(echo $bits|./endian.sh)\").unwrap()));\n"
   echo -en "assert_eq!(header.nonce, Bytes::new(&hex::decode(\"$(echo $nonce|./endian.sh)\").unwrap()));\n"
+  echo -en "assert_eq!(header.hash, Hash256::new(&hex::decode(\"$(echo $hash|./endian.sh)\").unwrap()));\n"
   echo ""
 }
 
@@ -38,5 +40,6 @@ merkle_root_hash=$(echo $json | jq '.merkleroot' | tr -d '"')
 time=$(echo $json | jq '.time')
 bits=$(echo $json | jq '.bits' | tr -d '"')
 nonce=$(printf %2X $(echo $json | jq '.nonce'))
+hash=$(echo $json | jq '.hash' | tr -d '"')
 
-generate_block_header_tests $version $prev_block_hash $merkle_root_hash $time $bits $nonce
+generate_block_header_tests $version $prev_block_hash $merkle_root_hash $time $bits $nonce $hash
