@@ -43,9 +43,9 @@ pub fn parse_transaction (input: &[u8]) -> IResult<&[u8], Transaction> {
     };
     let lock_time_raw = input.get(0..4).unwrap();
     let (input, lock_time) = le_u32(input)?;
-    let txid = hash256(vec![version_raw, inputs_raw, outputs_raw, lock_time_raw]);
+    let txid = hash256(&[version_raw, inputs_raw, outputs_raw, lock_time_raw].concat());
     let wtxid = match witnesses {
-        Some(_) => hash256(vec![version_raw, &[0x00,0x01][..], inputs_raw, outputs_raw, witnesses_raw, lock_time_raw]),
+        Some(_) => hash256(&[version_raw, &[0x00,0x01][..], inputs_raw, outputs_raw, witnesses_raw, lock_time_raw].concat()),
         None => txid
     };
     Ok((input,Transaction::new(

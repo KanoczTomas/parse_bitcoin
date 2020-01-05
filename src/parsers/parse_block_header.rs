@@ -32,7 +32,7 @@ pub fn parse_block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
         time,
         bits,
         nonce,
-        hash256(vec![block_header_raw])
+        hash256(block_header_raw)
     )))
 }
 

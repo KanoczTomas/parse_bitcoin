@@ -15,7 +15,7 @@ pub fn calculate_merkle_root(mut v: Vec<Hash256>) -> Hash256 {
             while n < v.len() {
                 let idx1 = n;
                 let idx2 = n+1;
-                res.push(hash256(vec![v[idx1].as_ref(),v[idx2].as_ref()]));
+                res.push(hash256(&[v[idx1].as_ref(),v[idx2].as_ref()].concat()));
                 n += 2;
             }
             calculate_merkle_root(res)
