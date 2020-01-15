@@ -1,7 +1,7 @@
-use nom::IResult;
-use nom::bytes::complete::take;
-use crate::types::Witness;
 use crate::parsers::parse_var_int;
+use crate::types::Witness;
+use nom::multi::length_data;
+use nom::IResult;
 
 pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], (Vec<Witness>, usize)> {
     let len_start = input.len();
@@ -9,11 +9,9 @@ pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], (Vec<Witness>, usize)> {
     let (mut input, witness_count) = parse_var_int(input)?;
     if witness_count == 0 {
         vec.push(Witness::empty());
-    }
-    else {
+    } else {
         for _ in 0..witness_count {
-            let (i, witness_len) = parse_var_int(input)?;
-            let (i, witness) = take(witness_len)(i)?;
+            let (i, witness) = length_data(parse_var_int)(input)?;
             vec.push(witness.into());
             input = i;
         }
@@ -30,18 +28,14 @@ mod test {
     //test_witness(witness, "" | "witness_script";
     #[macro_export]
     macro_rules! test_witness {
-        ($witness:expr, $witness_script:expr) => {
-            {
-                match $witness {
-                    Witness(None) => {
-                        assert_eq!("", $witness_script);
-                    }
-                    Witness(Some(Bytes(bytes))) => {
-                        assert_eq!(hex::encode(bytes), $witness_script)
-                    }
+        ($witness:expr, $witness_script:expr) => {{
+            match $witness {
+                Witness(None) => {
+                    assert_eq!("", $witness_script);
                 }
+                Witness(Some(Bytes(bytes))) => assert_eq!(hex::encode(bytes), $witness_script),
             }
-        }
+        }};
     }
     #[test]
     fn test_parse_witnesses() {

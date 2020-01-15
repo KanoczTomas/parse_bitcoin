@@ -1,7 +1,7 @@
-use nom::IResult;
+use crate::parsers::parse_magic_number;
 use nom::combinator::peek;
 use nom::number::complete::le_u8;
-use crate::parsers::parse_magic_number;
+use nom::IResult;
 
 pub fn find_block_start(mut input: &[u8]) -> IResult<&[u8], Option<&str>> {
     //move per byte untill magic number is found
@@ -9,7 +9,7 @@ pub fn find_block_start(mut input: &[u8]) -> IResult<&[u8], Option<&str>> {
         match peek(parse_magic_number)(input)?.1 {
             Some(_) => {
                 break;
-            },
+            }
             None => {
                 input = le_u8(input)?.0;
             }

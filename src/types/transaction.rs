@@ -1,4 +1,4 @@
-use crate::types::{TxInput, TxOutput, Witness, Hash256};
+use crate::types::{Hash256, TxInput, TxOutput, Witness};
 
 #[derive(Debug)]
 pub struct Transaction {
@@ -9,13 +9,20 @@ pub struct Transaction {
     pub lock_time: u32,
     pub txid: Hash256,
     pub wtxid: Hash256,
-    pub size: usize
+    pub size: usize,
 }
 
 impl Transaction {
-    pub fn new (version: u32, inputs: Vec<TxInput>,
-            outputs: Vec<TxOutput>, witnesses: Option<Vec<Vec<Witness>>>,
-            lock_time: u32, txid: Hash256, wtxid: Hash256, size: usize) -> Transaction {
+    pub fn new(
+        version: u32,
+        inputs: Vec<TxInput>,
+        outputs: Vec<TxOutput>,
+        witnesses: Option<Vec<Vec<Witness>>>,
+        lock_time: u32,
+        txid: Hash256,
+        wtxid: Hash256,
+        size: usize,
+    ) -> Transaction {
         Transaction {
             version,
             inputs,
@@ -24,7 +31,7 @@ impl Transaction {
             lock_time,
             txid,
             wtxid,
-            size
+            size,
         }
     }
 }
@@ -39,19 +46,19 @@ impl std::default::Default for Transaction {
             lock_time: 0,
             txid: Hash256::default(),
             wtxid: Hash256::default(),
-            size: 0
+            size: 0,
         }
     }
 }
 
 pub struct TransactionBuilder {
-    tx: Transaction
+    tx: Transaction,
 }
 
 impl TransactionBuilder {
     pub fn new() -> Self {
-        TransactionBuilder{
-            tx: Transaction::default()
+        TransactionBuilder {
+            tx: Transaction::default(),
         }
     }
     pub fn version(&mut self, version: u32) -> &mut Self {
@@ -103,7 +110,7 @@ impl TransactionBuilder {
             lock_time: self.tx.lock_time,
             txid: self.tx.txid,
             wtxid: self.tx.wtxid,
-            size: self.tx.size
+            size: self.tx.size,
         }
     }
 }

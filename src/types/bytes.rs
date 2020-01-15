@@ -1,8 +1,8 @@
-#[derive(Clone,PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Bytes(pub Vec<u8>);
 
 impl Bytes {
-    pub fn new(slice: &[u8]) -> Bytes{
+    pub fn new(slice: &[u8]) -> Bytes {
         Bytes(Vec::from(slice))
     }
     pub fn len(&self) -> usize {

@@ -1,21 +1,20 @@
 use std::cmp::PartialEq;
-use std::default::Default;
 use std::convert::{AsRef, From};
+use std::default::Default;
 
 //warning LE on wire, keeping format!
-#[derive(PartialEq,Copy,Clone)]
-pub struct Hash256(pub [u8;32]);
-
+#[derive(PartialEq, Copy, Clone)]
+pub struct Hash256(pub [u8; 32]);
 
 impl Hash256 {
     pub fn new(slice: &[u8]) -> Hash256 {
-        let mut arr = [0;32];
+        let mut arr = [0; 32];
         arr.copy_from_slice(slice);
         Hash256(arr)
     }
     pub fn is_zero(&self) -> bool {
         let Hash256(hash) = self;
-        let zeros = &[0u8;32][..];
+        let zeros = &[0u8; 32][..];
         if hash == zeros {
             return true;
         }
@@ -36,7 +35,7 @@ impl std::fmt::Debug for Hash256 {
 
 impl Default for Hash256 {
     fn default() -> Hash256 {
-        Hash256::new(&[0u8;32][..])
+        Hash256::new(&[0u8; 32][..])
     }
 }
 

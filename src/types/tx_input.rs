@@ -1,44 +1,44 @@
-use crate::types::Hash256;
 use crate::types::Bytes;
+use crate::types::Hash256;
 
 #[derive(Debug)]
 pub struct TxInput {
     pub previous_tx_hash: Hash256,
     pub vout: u32,
     pub script_sig: Bytes,
-    pub sequence: u32
+    pub sequence: u32,
 }
 
 impl TxInput {
-    pub fn new (ptx: &[u8], vout: u32, scr: &[u8], seq: u32) -> TxInput {
+    pub fn new(ptx: &[u8], vout: u32, scr: &[u8], seq: u32) -> TxInput {
         TxInput {
             previous_tx_hash: Hash256::new(ptx),
             vout,
             script_sig: Bytes::new(scr),
-            sequence: seq
+            sequence: seq,
         }
     }
 }
 
 impl std::default::Default for TxInput {
     fn default() -> TxInput {
-        TxInput{
+        TxInput {
             previous_tx_hash: Hash256::default(),
             vout: 0,
             script_sig: Bytes::default(),
-            sequence: 0
+            sequence: 0,
         }
     }
 }
 
 pub struct TxInputBuilder {
-    txi: TxInput
+    txi: TxInput,
 }
 
 impl TxInputBuilder {
     pub fn new() -> Self {
-        TxInputBuilder{
-            txi: TxInput::default()
+        TxInputBuilder {
+            txi: TxInput::default(),
         }
     }
     pub fn previous_tx_hash<H: Into<Hash256>>(&mut self, hash: H) -> &mut Self {
@@ -58,11 +58,11 @@ impl TxInputBuilder {
         self
     }
     pub fn build(&self) -> TxInput {
-        TxInput{
+        TxInput {
             previous_tx_hash: self.txi.previous_tx_hash,
             vout: self.txi.vout,
             script_sig: self.txi.script_sig.clone(),
-            sequence: self.txi.sequence
+            sequence: self.txi.sequence,
         }
     }
 }

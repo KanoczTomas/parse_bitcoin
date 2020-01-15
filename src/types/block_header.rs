@@ -12,20 +12,30 @@ pub struct BlockHeader {
     pub time: u32,
     pub bits: Bytes,
     pub nonce: Bytes,
-    pub hash: Hash256
+    pub hash: Hash256,
 }
 
- impl BlockHeader {
-    pub fn new(v: u32, pbh: &[u8], mrh: &[u8], t: u32, b: &[u8], n:&[u8], h: Hash256 ) -> BlockHeader{
-        BlockHeader{
+impl BlockHeader {
+    pub fn new(
+        v: u32,
+        pbh: &[u8],
+        mrh: &[u8],
+        t: u32,
+        b: &[u8],
+        n: &[u8],
+        h: Hash256,
+    ) -> BlockHeader {
+        BlockHeader {
             version: v,
             prev_block_hash: Hash256::new(pbh),
             merkle_root_hash: Hash256::new(mrh),
             time: t,
-            time_str: chrono::Utc.timestamp(t.try_into().unwrap(), 0u32).to_rfc2822(),
+            time_str: chrono::Utc
+                .timestamp(t.try_into().unwrap(), 0u32)
+                .to_rfc2822(),
             bits: Bytes::new(b),
             nonce: Bytes::new(n),
-            hash: h
+            hash: h,
         }
     }
 }
@@ -40,19 +50,19 @@ impl std::default::Default for BlockHeader {
             time: 0,
             bits: Bytes::default(),
             nonce: Bytes::default(),
-            hash: Hash256::default()
+            hash: Hash256::default(),
         }
     }
 }
 
 pub struct BlockHeaderBuilder {
-    blkh: BlockHeader
+    blkh: BlockHeader,
 }
 
 impl BlockHeaderBuilder {
     pub fn new() -> Self {
-        BlockHeaderBuilder{
-            blkh: BlockHeader::default()
+        BlockHeaderBuilder {
+            blkh: BlockHeader::default(),
         }
     }
     pub fn version(&mut self, version: u32) -> &mut Self {
@@ -69,7 +79,11 @@ impl BlockHeaderBuilder {
     }
     pub fn time(&mut self, time: u32) -> &mut Self {
         self.blkh.time = time;
-        self.blkh.time_str.push_str(&chrono::Utc.timestamp(time.try_into().unwrap(), 0u32).to_rfc2822());
+        self.blkh.time_str.push_str(
+            &chrono::Utc
+                .timestamp(time.try_into().unwrap(), 0u32)
+                .to_rfc2822(),
+        );
         self
     }
     pub fn bits<B: Into<Bytes>>(&mut self, bits: B) -> &mut Self {
@@ -85,7 +99,7 @@ impl BlockHeaderBuilder {
         self
     }
     pub fn build(&self) -> BlockHeader {
-        BlockHeader{
+        BlockHeader {
             version: self.blkh.version,
             prev_block_hash: self.blkh.prev_block_hash,
             merkle_root_hash: self.blkh.merkle_root_hash,
@@ -93,7 +107,7 @@ impl BlockHeaderBuilder {
             time: self.blkh.time,
             bits: self.blkh.bits.clone(),
             nonce: self.blkh.nonce.clone(),
-            hash: self.blkh.hash
+            hash: self.blkh.hash,
         }
     }
 }

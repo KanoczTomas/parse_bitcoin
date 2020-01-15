@@ -3,34 +3,35 @@ use crate::types::{BlockHeader, Transaction};
 #[derive(Debug)]
 pub struct Block {
     pub header: BlockHeader,
-    pub transactions: Vec<Transaction>
+    pub transactions: Vec<Transaction>,
 }
 
 impl Block {
     pub fn new(h: BlockHeader, t: Vec<Transaction>) -> Block {
         Block {
-            header: h, transactions: t
+            header: h,
+            transactions: t,
         }
     }
 }
 
 impl std::default::Default for Block {
     fn default() -> Block {
-        Block{
+        Block {
             header: BlockHeader::default(),
-            transactions: Vec::new()
+            transactions: Vec::new(),
         }
     }
 }
 
 pub struct BlockBuilder {
-    blk: Block
+    blk: Block,
 }
 
 impl BlockBuilder {
     pub fn new() -> Self {
-        BlockBuilder{
-            blk: Block::default()
+        BlockBuilder {
+            blk: Block::default(),
         }
     }
     pub fn header(&mut self, header: BlockHeader) -> &mut Self {
@@ -46,9 +47,9 @@ impl BlockBuilder {
         self
     }
     pub fn build(self) -> Block {
-        Block{
+        Block {
             header: self.blk.header,
-            transactions: self.blk.transactions
+            transactions: self.blk.transactions,
         }
     }
 }

@@ -1,60 +1,55 @@
-use nom::IResult;
-use nom::bytes::complete::take;
-use nom::number::complete::le_u32;
-use crate::types::{TxInput, TxInputBuilder};
 use crate::parsers::parse_var_int;
-
+use crate::types::{TxInput, TxInputBuilder};
+use nom::bytes::complete::take;
+use nom::multi::length_data;
+use nom::number::complete::le_u32;
+use nom::sequence::tuple;
+use nom::IResult;
 
 pub fn parse_tx_inputs(input: &[u8]) -> IResult<&[u8], (Vec<TxInput>, usize)> {
     let len_start = input.len();
     let (mut input, in_count) = parse_var_int(input)?;
     let mut vec: Vec<TxInput> = Vec::with_capacity(in_count as usize);
     for _ in 0..in_count {
-        let (i, previous_tx_hash) = take(32u32)(input)?;
-        let (i, vout) = le_u32(i)?;
-        let (i, script_len) = parse_var_int(i)?;
-        let (i, script_sig) = take(script_len)(i)?;
-        // // println!("script_sig: {}", String::from_utf8_lossy(script_sig));
-        let (i, sequence) = le_u32(i)?;
+        let (i, (previous_tx_hash, vout, script_sig, sequence)) =
+            tuple((take(32u32), le_u32, length_data(parse_var_int), le_u32))(input)?;
         input = i;
-        vec.push(TxInputBuilder::new()
-            .previous_tx_hash(previous_tx_hash)
-            .vout(vout)
-            .script_sig(script_sig)
-            .sequence(sequence)
-            .build()
+        vec.push(
+            TxInputBuilder::new()
+                .previous_tx_hash(previous_tx_hash)
+                .vout(vout)
+                .script_sig(script_sig)
+                .sequence(sequence)
+                .build(),
         );
     }
     let inputs_raw_size = len_start - input.len();
     Ok((input, (vec, inputs_raw_size)))
 }
 
-
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::types::{Hash256, Bytes};
+    use crate::types::{Bytes, Hash256};
     //all macros use wire format!!
     //test_input!(input, "hash",vout,"scriptsig","sequence")
     #[macro_export]
     macro_rules! test_input {
-        ($input:expr, $hash:expr, $vout:expr, $script_sig:expr, $sequence:expr) => {
-            {
-                let Hash256(hash) = $input.previous_tx_hash;
-                assert_eq!(hex::encode(hash), $hash);
-                assert_eq!($input.vout, $vout);
-                let Bytes(script_sig) = &$input.script_sig;
-                assert_eq!(hex::encode(script_sig), $script_sig);
-                assert_eq!($input.sequence, $sequence as u32);
-            }
-        };
+        ($input:expr, $hash:expr, $vout:expr, $script_sig:expr, $sequence:expr) => {{
+            let Hash256(hash) = $input.previous_tx_hash;
+            assert_eq!(hex::encode(hash), $hash);
+            assert_eq!($input.vout, $vout);
+            let Bytes(script_sig) = &$input.script_sig;
+            assert_eq!(hex::encode(script_sig), $script_sig);
+            assert_eq!($input.sequence, $sequence as u32);
+        }};
     }
     #[test]
     fn test_parse_tx_inputs() {
         let data = include_bytes!("../test_data/tx_640d0279609c9047ebbffb1d0dcf78cbbe2ae12cadd41a28377e1a259ebf5b89.input.bin");
         let (_, (inputs, size)) = parse_tx_inputs(data).unwrap();
         assert_eq!(size, data.len());
-        assert_eq!(inputs.len(),5);
+        assert_eq!(inputs.len(), 5);
         test_input!(
             &inputs[0],
             "18b120842f139d232fa9ae944d38f3657aaa83ee3acb773cdafce39c0095bc65",

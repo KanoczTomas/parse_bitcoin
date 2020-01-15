@@ -1,19 +1,21 @@
+use hex;
+use nom::number::complete::le_u32;
 use parse_bitcoin::parsers::parse_block;
 use parse_bitcoin::utils::find_block_start;
-use std::io::prelude::*;
-use nom::number::complete::le_u32;
-use std::error::Error;
-use hex;
 use std::collections::HashMap;
+use std::error::Error;
 use std::io;
+use std::io::prelude::*;
 
-
-
-fn read_file(filename: &str) -> std::io::Result<()>{
+fn read_file(filename: &str) -> std::io::Result<()> {
     let mut file = std::fs::File::open(filename)?;
     let mut buffer = Vec::new();
     let read_bytes = file.read_to_end(&mut buffer)?;
-    println!("read {} MiB from {} file", read_bytes/1024/1024, filename);
+    println!(
+        "read {} MiB from {} file",
+        read_bytes / 1024 / 1024,
+        filename
+    );
     let mut input = &buffer[..];
     // let n = 3;
     // let mut blocks = Vec::with_capacity(n);
@@ -27,7 +29,7 @@ fn read_file(filename: &str) -> std::io::Result<()>{
         // println!("searching for a block start ...");
         let (i, blockchain) = match find_block_start(input) {
             Ok(res) => res,
-            Err(nom::Err::Error(([0,0,0], nom::error::ErrorKind::Eof))) => {
+            Err(nom::Err::Error(([0, 0, 0], nom::error::ErrorKind::Eof))) => {
                 // println!("no magic number found, but fond 0 bytes in a row, incrementing counter");
                 // error_count += 1;
                 // if error_count > 3 {
@@ -38,7 +40,7 @@ fn read_file(filename: &str) -> std::io::Result<()>{
                 // continue;
                 println!("no magic number found and we have 0 bytes following, aborting read!");
                 break;
-            },
+            }
             Err(nom::Err::Error(([], nom::error::ErrorKind::Eof))) => {
                 println!("end of file reached, exiting search for magic number");
                 break;
@@ -53,7 +55,7 @@ fn read_file(filename: &str) -> std::io::Result<()>{
         *blkch_counter += 1;
         // println!("part of input after find_block_start: {}", hex::encode(&i[0..63]));
         // println!("found block with magic number signalling: {}", blockchain.unwrap());
-        let (i, block_size) = match le_u32::<()>(i){
+        let (i, block_size) = match le_u32::<()>(i) {
             Ok(res) => res,
             Err(e) => {
                 println!("There was an error {:?}", e);
@@ -63,22 +65,22 @@ fn read_file(filename: &str) -> std::io::Result<()>{
         // println!("part of input after parse_var_int: {}", hex::encode(&i[0..63]));
         // println!("block has size {} Bytes", block_size);
         // let (i, o) = match parse_block (&i[0..block_size as usize]){
-        let (i, o) = match parse_block (i){
-                Ok(res) => res,
-                Err(nom::Err::Error((i, e))) => {
-                    println!("therewas an error {:?}", e);
-                    input = i;
-                    break;
-                },
-                Err(nom::Err::Failure((i, e))) => {
-                    println!("there was a failure {:?}", e);
-                    input = i;
-                    break;
-                },
-                Err(nom::Err::Incomplete(needed)) => {
-                    println!("we received incomplete, need {:?} bytes", needed);
-                    break;
-                }
+        let (i, o) = match parse_block(i) {
+            Ok(res) => res,
+            Err(nom::Err::Error((i, e))) => {
+                println!("therewas an error {:?}", e);
+                input = i;
+                break;
+            }
+            Err(nom::Err::Failure((i, e))) => {
+                println!("there was a failure {:?}", e);
+                input = i;
+                break;
+            }
+            Err(nom::Err::Incomplete(needed)) => {
+                println!("we received incomplete, need {:?} bytes", needed);
+                break;
+            }
         };
         // println!("part of input after parse_block: {}", hex::encode(&i[0..63]));
         // println!("block found: {:?}", o);
@@ -94,14 +96,14 @@ fn read_file(filename: &str) -> std::io::Result<()>{
     Ok(())
 }
 
-fn main() -> Result<(), std::boxed::Box<dyn Error>>{
+fn main() -> Result<(), std::boxed::Box<dyn Error>> {
     // match read_file("/home/tk/bin/bisq/docs/autosetup-regtest-dao/regtest/blocks/blk00000.dat") {
     match read_file("/home/tk/.bitcoin/blocks/blk01922.dat") {
-    // match read_file("/home/tk/.bitcoin/blocks/blk01919.dat") {
-    // match read_file(".gitignore") {
+        // match read_file("/home/tk/.bitcoin/blocks/blk01919.dat") {
+        // match read_file(".gitignore") {
         Ok(_) => println!("all went fine!"),
         // Err(e) => println!("Error is e")
-        Err(e) => println!("Error is {:?}",e)
+        Err(e) => println!("Error is {:?}", e),
     }
     Ok(())
 }

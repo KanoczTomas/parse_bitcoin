@@ -8,7 +8,7 @@ pub fn parse_magic_number(input: &[u8]) -> IResult<&[u8], Option<&str>> {
         0xDAB5BFFA => Some("regtest"),
         0x0709110B => Some("testnet"),
         0xFEB4BEF9 => Some("namecoin"),
-        _ => None
+        _ => None,
     };
     Ok((i, result))
 }
