@@ -1,6 +1,6 @@
 use std::cmp::PartialEq;
 use std::default::Default;
-use std::convert::AsRef;
+use std::convert::{AsRef, From};
 
 //warning LE on wire, keeping format!
 #[derive(PartialEq,Copy,Clone)]
@@ -44,5 +44,11 @@ impl AsRef<[u8]> for Hash256 {
     fn as_ref(&self) -> &[u8] {
         let Hash256(hash) = self;
         &hash[..]
+    }
+}
+
+impl From<&[u8]> for Hash256 {
+    fn from(slice: &[u8]) -> Hash256 {
+        Hash256::new(slice)
     }
 }

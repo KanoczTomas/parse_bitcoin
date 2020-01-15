@@ -14,7 +14,7 @@ pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], (Vec<Witness>, usize)> {
         for _ in 0..witness_count {
             let (i, witness_len) = parse_var_int(input)?;
             let (i, witness) = take(witness_len)(i)?;
-            vec.push(Witness::new(witness));
+            vec.push(witness.into());
             input = i;
         }
     }

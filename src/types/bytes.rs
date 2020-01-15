@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(Clone,PartialEq)]
 pub struct Bytes(pub Vec<u8>);
 
 impl Bytes {
@@ -23,5 +23,17 @@ impl std::fmt::Debug for Bytes {
             write!(f, "{:02X}", byte)?
         }
         write!(f, "")
+    }
+}
+
+impl std::convert::From<&[u8]> for Bytes {
+    fn from(slice: &[u8]) -> Bytes {
+        Bytes(Vec::from(slice))
+    }
+}
+
+impl std::default::Default for Bytes {
+    fn default() -> Bytes {
+        Bytes::new(&[][..])
     }
 }

@@ -15,3 +15,15 @@ impl Witness {
         Witness(None)
     }
 }
+
+impl std::default::Default for Witness {
+    fn default() -> Witness {
+        Witness::empty()
+    }
+}
+
+impl std::convert::From<&[u8]> for Witness {
+    fn from(slice: &[u8]) -> Self {
+        Witness::new(slice)
+    }
+}

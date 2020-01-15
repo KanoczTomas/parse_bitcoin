@@ -1,7 +1,7 @@
 use nom::IResult;
 use nom::bytes::complete::take;
 use nom::number::complete::le_u32;
-use crate::types::TxInput;
+use crate::types::{TxInput, TxInputBuilder};
 use crate::parsers::parse_var_int;
 
 
@@ -10,21 +10,20 @@ pub fn parse_tx_inputs(input: &[u8]) -> IResult<&[u8], (Vec<TxInput>, usize)> {
     let (mut input, in_count) = parse_var_int(input)?;
     let mut vec: Vec<TxInput> = Vec::with_capacity(in_count as usize);
     for _ in 0..in_count {
-        let len_start = input.len();
-        let (i, previos_tx_hash) = take(32u32)(input)?;
+        let (i, previous_tx_hash) = take(32u32)(input)?;
         let (i, vout) = le_u32(i)?;
         let (i, script_len) = parse_var_int(i)?;
         let (i, script_sig) = take(script_len)(i)?;
-        // println!("script_sig: {}", String::from_utf8_lossy(script_sig));
+        // // println!("script_sig: {}", String::from_utf8_lossy(script_sig));
         let (i, sequence) = le_u32(i)?;
         input = i;
-        let len_end = input.len();
-        vec.push(TxInput::new(
-            previos_tx_hash,
-            vout,
-            script_sig,
-            sequence
-        ));
+        vec.push(TxInputBuilder::new()
+            .previous_tx_hash(previous_tx_hash)
+            .vout(vout)
+            .script_sig(script_sig)
+            .sequence(sequence)
+            .build()
+        );
     }
     let inputs_raw_size = len_start - input.len();
     Ok((input, (vec, inputs_raw_size)))
@@ -41,7 +40,7 @@ pub mod test {
     macro_rules! test_input {
         ($input:expr, $hash:expr, $vout:expr, $script_sig:expr, $sequence:expr) => {
             {
-                let Hash256(hash) = $input.previos_tx_hash;
+                let Hash256(hash) = $input.previous_tx_hash;
                 assert_eq!(hex::encode(hash), $hash);
                 assert_eq!($input.vout, $vout);
                 let Bytes(script_sig) = &$input.script_sig;

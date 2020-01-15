@@ -2,18 +2,18 @@ use nom::IResult;
 use nom::number::complete::{le_u32, le_u16, le_u64, le_u8};
 
 pub fn parse_var_int(input: &[u8]) -> IResult<&[u8], u64> {
-    let (i, o) = le_u8(input)?;
-    if o == 0xFD {
-        let (i, o) = le_u16(i)?;
-        return Ok((i, o.into()))
-    }else if o == 0xFE {
-        let (i, o) = le_u32(i)?;
-        return Ok((i, o.into()))
-    }else if o == 0xFF {
-        let (i, o) = le_u64(i)?;
-        return Ok((i, o.into()))
+    let (i, size) = le_u8(input)?;
+    if size == 0xFD {
+        let (i, size) = le_u16(i)?;
+        return Ok((i, size.into()))
+    }else if size == 0xFE {
+        let (i, size) = le_u32(i)?;
+        return Ok((i, size.into()))
+    }else if size == 0xFF {
+        let (i, size) = le_u64(i)?;
+        return Ok((i, size.into()))
     }
-    Ok((i,o.into()))
+    Ok((i,size.into()))
 }
 
 #[cfg(test)]

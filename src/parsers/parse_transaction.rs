@@ -8,7 +8,7 @@ use crate::utils::hash256;
 pub fn parse_transaction (input: &[u8]) -> IResult<&[u8], Transaction> {
     let mut data_start;
     let transaction_start = input;
-    let version_raw = input.get(0..4).unwrap();
+    let version_raw = &input[0..4];
     let (input,version) = le_u32(input)?;
     let res : IResult<&[u8], &[u8]> = tag([0x00,0x01])(input);
     let (input, witness_data) = match res {
@@ -17,11 +17,11 @@ pub fn parse_transaction (input: &[u8]) -> IResult<&[u8], Transaction> {
     };
     data_start = input;
     let (input, (inputs, inputs_raw_size)) = parse_tx_inputs(input)?;
-    let inputs_raw = data_start.get(0..inputs_raw_size).unwrap();
-    let is_coinbase = inputs[0].previos_tx_hash.is_zero();
+    let inputs_raw = &data_start[0..inputs_raw_size];
+    let is_coinbase = inputs[0].previous_tx_hash.is_zero();
     data_start = input;
     let (mut input, (outputs, outputs_raw_size)) = parse_tx_outputs(input)?;
-    let outputs_raw = data_start.get(0..outputs_raw_size).unwrap();
+    let outputs_raw = &data_start[0..outputs_raw_size];
     data_start = input;
     let (witnesses, total_witnesses_raw_size) = if witness_data == true {
         let mut vec = Vec::with_capacity(inputs.len());
@@ -37,7 +37,7 @@ pub fn parse_transaction (input: &[u8]) -> IResult<&[u8], Transaction> {
         (None, 0)
     };
     let witnesses_raw = if witness_data {
-         data_start.get(0..total_witnesses_raw_size).unwrap()
+         &data_start[0..total_witnesses_raw_size]
     } else {
         &[][..]
     };
@@ -454,7 +454,5 @@ mod test {
         let witnesses_n = &witnesses[2];
         test_witness!(&witnesses_n[0], "30440220128f1b958bdd4696d0f9d11f6909bceaac5c9ae36a0b61f1a12cf21853ba696402202027c26b3bf790674f3b910e41963f54e36b82e11092016b2f01e09310e835da01");
         test_witness!(&witnesses_n[1], "034ed258709969db6507e5b86568e6c57d903917034a853fd2f6b7604443431518");
-
-
     }
 }

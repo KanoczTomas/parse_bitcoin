@@ -1,7 +1,7 @@
 use nom::IResult;
 use nom::bytes::complete::take;
 use nom::number::complete::le_u64;
-use crate::types::TxOutput;
+use crate::types::{TxOutput,TxOutputBuilder};
 use crate::parsers::parse_var_int;
 
 pub fn parse_tx_outputs(input: &[u8]) -> IResult<&[u8], (Vec<TxOutput>, usize)> {
@@ -13,10 +13,12 @@ pub fn parse_tx_outputs(input: &[u8]) -> IResult<&[u8], (Vec<TxOutput>, usize)> 
         let (i, script_len) = parse_var_int(i)?;
         let (i, script_pub_key) = take(script_len)(i)?;
         input = i;
-        vec.push(TxOutput::new(
-            value,
-            script_pub_key
-        ));
+        vec.push(
+            TxOutputBuilder::new()
+            .value(value)
+            .script_pub_key(script_pub_key)
+            .build()
+        );
     }
     let outputs_raw_size = len_start - input.len();
     Ok((input, (vec, outputs_raw_size)))

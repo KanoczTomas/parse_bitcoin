@@ -2,7 +2,7 @@ use nom::IResult;
 use nom::bytes::complete::take;
 use nom::sequence::tuple;
 use nom::number::complete::le_u32;
-use crate::types::BlockHeader;
+use crate::types::{BlockHeader, BlockHeaderBuilder};
 use crate::utils::hash256;
 
 
@@ -24,16 +24,17 @@ pub fn parse_block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
         take(4 as usize) //nonce
     )
     )(input)?;
-    let block_header_raw = block_header_start.get(0..block_header_start.len() - i.len()).unwrap();
-    Ok((i, BlockHeader::new(
-        version,
-        prev_block_hash,
-        merkle_root_hash,
-        time,
-        bits,
-        nonce,
-        hash256(block_header_raw)
-    )))
+    let block_header_raw = &block_header_start[0..block_header_start.len() - i.len()];
+    Ok((i, BlockHeaderBuilder::new()
+        .version(version)
+        .prev_block_hash(prev_block_hash)
+        .merkle_root_hash(merkle_root_hash)
+        .time(time)
+        .bits(bits)
+        .nonce(nonce)
+        .hash(hash256(block_header_raw))
+        .build()
+    ))
 }
 
 #[cfg(test)]

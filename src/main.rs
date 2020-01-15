@@ -1,66 +1,109 @@
-// extern crate nom;
-// use nom::sequence::tuple;
-// use nom::multi::many_till;
-// use nom::bytes::complete::take;
-// use nom::combinator::peek;
-// use parse_bitcoin::parser::{
-//     parse_magic_number,
-//     parse_block_size,
-//     parse_block_header,
-//     parse_var_int,
-//     parse_transaction,
-//     parse_block};
 use parse_bitcoin::parsers::parse_block;
+use parse_bitcoin::utils::find_block_start;
 use std::io::prelude::*;
+use nom::number::complete::le_u32;
+use std::error::Error;
+use hex;
+use std::collections::HashMap;
+use std::io;
+
 
 
 fn read_file(filename: &str) -> std::io::Result<()>{
     let mut file = std::fs::File::open(filename)?;
-    // let mut buffer = Vec::with_capacity(2048);
-    // let mut buffer = [0u8;1024];
-    // let read_bytes = file.read_exact(&mut buffer)?;
     let mut buffer = Vec::new();
     let read_bytes = file.read_to_end(&mut buffer)?;
-    // println!("read bytes: {:?}", read_bytes);
-    // let res = magic_number(&buffer);
-    // let res = tuple((parse_magic_number, parse_block_size, parse_block_header, parse_var_int, parse_transaction)) (&buffer);
-    // println!("res: {:?}", res);
+    println!("read {} MiB from {} file", read_bytes/1024/1024, filename);
     let mut input = &buffer[..];
-    let n = 1;
-    let mut blocks = Vec::with_capacity(n);
-    for x in 0..n {
-        // let (i, o) = many_till(take(1usize), peek(parse_magic_number))(input).unwrap();
-        // println!("I: {:?}, o: {:?} ",hex::encode(&i[0..6]),&o);
-        // print!("\rparsed {} blocks", x);
-        let (i, o) = match parse_block (input){
-        // let (i, o) = match parse_block (input){
+    // let n = 3;
+    // let mut blocks = Vec::with_capacity(n);
+    let mut blocks = Vec::new();
+    // for x in 0..n {
+    let mut blk_count = 0;
+    let mut error_count = 0;
+    let mut chains = HashMap::new();
+    loop {
+        // println!("part of input: {}", hex::encode(&input[0..63]));
+        // println!("searching for a block start ...");
+        let (i, blockchain) = match find_block_start(input) {
+            Ok(res) => res,
+            Err(nom::Err::Error(([0,0,0], nom::error::ErrorKind::Eof))) => {
+                // println!("no magic number found, but fond 0 bytes in a row, incrementing counter");
+                // error_count += 1;
+                // if error_count > 3 {
+                //     println!("we probably have a ton of zeros, input(64): {}", hex::encode(&input[0..63]));
+                //     println!("aborting");
+                //     break;
+                // }
+                // continue;
+                println!("no magic number found and we have 0 bytes following, aborting read!");
+                break;
+            },
+            Err(nom::Err::Error(([], nom::error::ErrorKind::Eof))) => {
+                println!("end of file reached, exiting search for magic number");
+                break;
+            }
+            Err(e) => {
+                println!("no magic number found, skipping a byte: {:?}", e);
+                error_count += 1;
+                continue;
+            }
+        };
+        let blkch_counter = chains.entry(blockchain).or_insert(0);
+        *blkch_counter += 1;
+        // println!("part of input after find_block_start: {}", hex::encode(&i[0..63]));
+        // println!("found block with magic number signalling: {}", blockchain.unwrap());
+        let (i, block_size) = match le_u32::<()>(i){
+            Ok(res) => res,
+            Err(e) => {
+                println!("There was an error {:?}", e);
+                break;
+            }
+        };
+        // println!("part of input after parse_var_int: {}", hex::encode(&i[0..63]));
+        // println!("block has size {} Bytes", block_size);
+        // let (i, o) = match parse_block (&i[0..block_size as usize]){
+        let (i, o) = match parse_block (i){
                 Ok(res) => res,
-                Err(e) => {
-                    // panic!("therewas an error, {:?}", e);
-                    panic!("therewas an error ");
-                    // println!("error in parsing block: {:?}", e);
+                Err(nom::Err::Error((i, e))) => {
+                    println!("therewas an error {:?}", e);
+                    input = i;
+                    break;
+                },
+                Err(nom::Err::Failure((i, e))) => {
+                    println!("there was a failure {:?}", e);
+                    input = i;
+                    break;
+                },
+                Err(nom::Err::Incomplete(needed)) => {
+                    println!("we received incomplete, need {:?} bytes", needed);
+                    break;
                 }
         };
+        // println!("part of input after parse_block: {}", hex::encode(&i[0..63]));
+        // println!("block found: {:?}", o);
         blocks.push(o);
+        blk_count += 1;
+        print!("\rprocessed {} blocks  ", blk_count);
+        io::stdout().flush()?;
         input = i;
     }
-    println!("res: {:?}", blocks);
-    // let test: nom::IResult<&[u8], &[u8]> = nom::bytes::complete::take(0u32)(&[0,1,2,3][..]);
-    // println!("{:?}", test);
-    // let ize = match test {
-    //     Ok(i) => i,
-    //     Err(e) => (&[0][..],&[0][..])
-    // };
-    // println!("ize: {:?}", ize.1.len());
+    // println!("res: {:?}", blocks);
+    println!("found {} blocks", blocks.len());
+    println!("chains: {:?}", chains);
     Ok(())
 }
 
-fn main() {
+fn main() -> Result<(), std::boxed::Box<dyn Error>>{
     // match read_file("/home/tk/bin/bisq/docs/autosetup-regtest-dao/regtest/blocks/blk00000.dat") {
-    match read_file("/home/tk/.bitcoin/blocks/blk01903.dat") {
+    match read_file("/home/tk/.bitcoin/blocks/blk01922.dat") {
+    // match read_file("/home/tk/.bitcoin/blocks/blk01919.dat") {
     // match read_file(".gitignore") {
         Ok(_) => println!("all went fine!"),
         // Err(e) => println!("Error is e")
         Err(e) => println!("Error is {:?}",e)
     }
+    Ok(())
 }
+
+//spravit parse dat file util script a vyhodi to Vec<Block> + statistiky (hasmap toho, ze kolko nasiel blokov a magic numberov atd.)
