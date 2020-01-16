@@ -1,7 +1,11 @@
-use crate::parsers::parse_var_int;
-use crate::types::Witness;
-use nom::multi::length_data;
-use nom::IResult;
+use crate::{
+    parsers::parse_var_int,
+    types::Witness
+};
+use nom::{
+    multi::length_data,
+    IResult
+};
 
 pub fn parse_witnesses(input: &[u8]) -> IResult<&[u8], (Vec<Witness>, usize)> {
     let len_start = input.len();

@@ -81,8 +81,8 @@ impl TransactionBuilder {
         self.tx.outputs.append(outputs);
         self
     }
-    pub fn witnesses(&mut self, witnesses: Vec<Vec<Witness>>) -> &mut Self {
-        self.tx.witnesses = Some(witnesses);
+    pub fn witnesses(&mut self, witnesses: Option<Vec<Vec<Witness>>>) -> &mut Self {
+        self.tx.witnesses = witnesses;
         self
     }
     pub fn lock_time(&mut self, lock_time: u32) -> &mut Self {
@@ -101,12 +101,12 @@ impl TransactionBuilder {
         self.tx.size = size;
         self
     }
-    pub fn build(self) -> Transaction {
+    pub fn build(&self) -> Transaction {
         Transaction {
             version: self.tx.version,
-            inputs: self.tx.inputs,
-            outputs: self.tx.outputs,
-            witnesses: self.tx.witnesses,
+            inputs: self.tx.inputs.clone(),
+            outputs: self.tx.outputs.clone(),
+            witnesses: self.tx.witnesses.clone(),
             lock_time: self.tx.lock_time,
             txid: self.tx.txid,
             wtxid: self.tx.wtxid,

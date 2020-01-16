@@ -1,54 +1,63 @@
-use crate::parsers::{parse_tx_inputs, parse_tx_outputs, parse_witnesses};
-use crate::types::Transaction;
-use crate::utils::hash256;
-use nom::bytes::complete::tag;
-use nom::number::complete::le_u32;
-use nom::IResult;
+use crate::{
+    parsers::{parse_tx_inputs, parse_tx_outputs, parse_witnesses},
+    types::{Transaction, TransactionBuilder},
+    utils::hash256
+};
+use nom::{
+    bytes::complete::tag,
+    combinator::{cond, map, opt},
+    multi::count,
+    number::complete::le_u32,
+    sequence::tuple,
+    IResult
+};
 
 pub fn parse_transaction(input: &[u8]) -> IResult<&[u8], Transaction> {
-    let mut data_start;
-    let transaction_start = input;
+    let map_then_unwrap_or_false = partial!(map => _, |x: Option<_>| x.unwrap_or(false));
+    let map_to_true = partial!(map => _, |_| true);
+    let witness_marker = [0x00, 0x01];
+
+    let (
+        o,
+        (version, has_witness_data, (mut inputs, inputs_raw_size), (mut outputs, outputs_raw_size)),
+    ) = tuple((
+        le_u32,
+        map_then_unwrap_or_false(opt(map_to_true(tag(witness_marker)))),
+        parse_tx_inputs,
+        parse_tx_outputs,
+    ))(input)?;
+
+    let (o, (witnesses, lock_time)) = tuple((
+        cond(has_witness_data, count(parse_witnesses, inputs.len())),
+        le_u32,
+    ))(o)?;
+    //witnesses is an Option<Vec(Witness, usize)>
+    //v stands for vector, t for tuple in the closures
+    let witnesses_raw_size = witnesses
+        .as_ref()
+        .map(|v| v.iter().map(|t| t.1).sum())
+        .unwrap_or(0);
+    let witnesses: Option<Vec<_>> = witnesses.map(|v| v.iter().map(|t| t.0.clone()).collect());
     let version_raw = &input[0..4];
-    let (input, version) = le_u32(input)?;
-    let res: IResult<&[u8], &[u8]> = tag([0x00, 0x01])(input);
-    let (input, witness_data) = match res {
-        Ok((input, _)) => (input, true),
-        Err(_) => (input, false),
+    let marker_len = match has_witness_data {
+        true => 2,
+        false => 0,
     };
-    data_start = input;
-    let (input, (inputs, inputs_raw_size)) = parse_tx_inputs(input)?;
-    let inputs_raw = &data_start[0..inputs_raw_size];
-    let is_coinbase = inputs[0].previous_tx_hash.is_zero();
-    data_start = input;
-    let (mut input, (outputs, outputs_raw_size)) = parse_tx_outputs(input)?;
-    let outputs_raw = &data_start[0..outputs_raw_size];
-    data_start = input;
-    let (witnesses, total_witnesses_raw_size) = if witness_data == true {
-        let mut vec = Vec::with_capacity(inputs.len());
-        let mut total_witnesses_raw_size = 0;
-        for _ in 0..inputs.len() {
-            let (i, (witnesses, witnesses_raw_size)) = parse_witnesses(input)?;
-            input = i;
-            vec.push(witnesses);
-            total_witnesses_raw_size += witnesses_raw_size;
-        }
-        (Some(vec), total_witnesses_raw_size)
-    } else {
-        (None, 0)
-    };
-    let witnesses_raw = if witness_data {
-        &data_start[0..total_witnesses_raw_size]
-    } else {
-        &[][..]
-    };
-    let lock_time_raw = input.get(0..4).unwrap();
-    let (input, lock_time) = le_u32(input)?;
+    let size = input.len() - o.len();
+    let inputs_raw = &input[4 + marker_len..4 + marker_len + inputs_raw_size];
+    let outputs_raw = &input
+        [4 + marker_len + inputs_raw_size..4 + marker_len + inputs_raw_size + outputs_raw_size];
+    let witnesses_raw = &input[4 + marker_len + inputs_raw_size + outputs_raw_size
+        ..4 + marker_len + inputs_raw_size + outputs_raw_size + witnesses_raw_size];
+    let lock_time_raw =
+        &input[4 + marker_len + inputs_raw_size + outputs_raw_size + witnesses_raw_size
+            ..4 + marker_len + inputs_raw_size + outputs_raw_size + witnesses_raw_size + 4];
     let txid = hash256(&[version_raw, inputs_raw, outputs_raw, lock_time_raw].concat());
     let wtxid = match witnesses {
         Some(_) => hash256(
             &[
                 version_raw,
-                &[0x00, 0x01][..],
+                &witness_marker,
                 inputs_raw,
                 outputs_raw,
                 witnesses_raw,
@@ -59,17 +68,17 @@ pub fn parse_transaction(input: &[u8]) -> IResult<&[u8], Transaction> {
         None => txid,
     };
     Ok((
-        input,
-        Transaction::new(
-            version,
-            inputs,
-            outputs,
-            witnesses,
-            lock_time,
-            txid,
-            wtxid,
-            transaction_start.len() - input.len(),
-        ),
+        o,
+        TransactionBuilder::new()
+            .version(version)
+            .inputs(&mut inputs)
+            .outputs(&mut outputs)
+            .witnesses(witnesses)
+            .lock_time(lock_time)
+            .txid(txid)
+            .wtxid(wtxid)
+            .size(size)
+            .build(),
     ))
 }
 

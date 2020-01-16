@@ -1,7 +1,6 @@
-use crate::types::Bytes;
-use crate::types::Hash256;
+use crate::types::{Bytes, Hash256};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TxInput {
     pub previous_tx_hash: Hash256,
     pub vout: u32,

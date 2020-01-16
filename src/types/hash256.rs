@@ -1,6 +1,8 @@
-use std::cmp::PartialEq;
-use std::convert::{AsRef, From};
-use std::default::Default;
+use std::{
+    cmp::PartialEq,
+    convert::{AsRef, From},
+    default::Default
+};
 
 //warning LE on wire, keeping format!
 #[derive(PartialEq, Copy, Clone)]

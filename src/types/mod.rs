@@ -15,5 +15,6 @@ mod witness;
 pub use self::witness::Witness;
 mod transaction;
 pub use self::transaction::Transaction;
+pub use self::transaction::TransactionBuilder;
 mod block;
 pub use self::block::Block;

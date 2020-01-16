@@ -1,6 +1,6 @@
 use crate::types::Bytes;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Witness(pub Option<Bytes>);
 
 impl Witness {

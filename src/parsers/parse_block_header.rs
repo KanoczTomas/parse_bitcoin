@@ -1,9 +1,13 @@
-use crate::types::{BlockHeader, BlockHeaderBuilder};
-use crate::utils::hash256;
-use nom::bytes::complete::take;
-use nom::number::complete::le_u32;
-use nom::sequence::tuple;
-use nom::IResult;
+use crate::{
+    types::{BlockHeader, BlockHeaderBuilder},
+    utils::hash256
+};
+use nom::{
+    bytes::complete::take,
+    number::complete::le_u32,
+    sequence::tuple,
+    IResult,
+};
 
 pub fn parse_block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
     let block_header_start = input;

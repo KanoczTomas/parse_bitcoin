@@ -98,8 +98,8 @@ fn read_file(filename: &str) -> std::io::Result<()> {
 
 fn main() -> Result<(), std::boxed::Box<dyn Error>> {
     // match read_file("/home/tk/bin/bisq/docs/autosetup-regtest-dao/regtest/blocks/blk00000.dat") {
-    match read_file("/home/tk/.bitcoin/blocks/blk01922.dat") {
-        // match read_file("/home/tk/.bitcoin/blocks/blk01919.dat") {
+    match read_file("/home/tk/.bitcoin/blocks/blk02063.dat") {
+        // match read_file("/home/tk/.bitcoin/blocks/blk02063.dat") {
         // match read_file(".gitignore") {
         Ok(_) => println!("all went fine!"),
         // Err(e) => println!("Error is e")
@@ -109,3 +109,5 @@ fn main() -> Result<(), std::boxed::Box<dyn Error>> {
 }
 
 //spravit parse dat file util script a vyhodi to Vec<Block> + statistiky (hasmap toho, ze kolko nasiel blokov a magic numberov atd.)
+
+//implementni marker trait BE a LE, potom mozes implementovat from trait z jedneho na druhy a nasledne implementnut display trate pre to

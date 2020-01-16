@@ -1,9 +1,13 @@
-use crate::parsers::parse_var_int;
-use crate::types::{TxOutput, TxOutputBuilder};
-use nom::multi::length_data;
-use nom::number::complete::le_u64;
-use nom::sequence::tuple;
-use nom::IResult;
+use crate::{
+    parsers::parse_var_int,
+    types::{TxOutput, TxOutputBuilder}
+};
+use nom::{
+    multi::length_data,
+    number::complete::le_u64,
+    sequence::tuple,
+    IResult
+};
 
 pub fn parse_tx_outputs(input: &[u8]) -> IResult<&[u8], (Vec<TxOutput>, usize)> {
     let len_start = input.len();
