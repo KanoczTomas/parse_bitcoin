@@ -1,11 +1,12 @@
 use crate::types::Bytes;
 use crate::types::Hash256;
+use crate::types::BlockVersion;
 use chrono::prelude::*;
 use std::convert::TryInto;
 
 #[derive(Debug)]
 pub struct BlockHeader {
-    pub version: u32,
+    pub version: BlockVersion,
     pub prev_block_hash: Hash256,
     pub merkle_root_hash: Hash256,
     pub time_str: String,
@@ -17,7 +18,7 @@ pub struct BlockHeader {
 
 impl BlockHeader {
     pub fn new(
-        v: u32,
+        v: BlockVersion,
         pbh: &[u8],
         mrh: &[u8],
         t: u32,
@@ -43,7 +44,7 @@ impl BlockHeader {
 impl std::default::Default for BlockHeader {
     fn default() -> BlockHeader {
         BlockHeader {
-            version: 0,
+            version: BlockVersion(0),
             prev_block_hash: Hash256::default(),
             merkle_root_hash: Hash256::default(),
             time_str: String::new(),
@@ -65,7 +66,7 @@ impl BlockHeaderBuilder {
             blkh: BlockHeader::default(),
         }
     }
-    pub fn version(&mut self, version: u32) -> &mut Self {
+    pub fn version(&mut self, version: BlockVersion) -> &mut Self {
         self.blkh.version = version;
         self
     }
