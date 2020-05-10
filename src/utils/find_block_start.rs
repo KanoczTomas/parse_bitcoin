@@ -1,9 +1,10 @@
 use crate::parsers::parse_magic_number;
+use crate::types::Network;
 use nom::combinator::peek;
 use nom::number::complete::le_u8;
 use nom::IResult;
 
-pub fn find_block_start(mut input: &[u8]) -> IResult<&[u8], Option<&str>> {
+pub fn find_block_start(mut input: &[u8]) -> IResult<&[u8], Option<Network>> {
     //move per byte untill magic number is found
     loop {
         match peek(parse_magic_number)(input)?.1 {
