@@ -1,4 +1,4 @@
-use hex;
+//use hex;
 use nom::number::complete::le_u32;
 use parse_bitcoin::parsers::parse_block;
 use parse_bitcoin::utils::find_block_start;
