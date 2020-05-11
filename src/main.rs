@@ -6,15 +6,16 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::io;
 use std::io::prelude::*;
+use std::path::{Path, PathBuf};
 
-fn read_file(filename: &str) -> std::io::Result<()> {
-    let mut file = std::fs::File::open(filename)?;
+fn read_file<P: AsRef<Path>>(filename: P) -> std::io::Result<()> {
+    let mut file = std::fs::File::open(&filename)?;
     let mut buffer = Vec::new();
     let read_bytes = file.read_to_end(&mut buffer)?;
     println!(
         "read {} MiB from {} file",
         read_bytes / 1024 / 1024,
-        filename
+        filename.as_ref().display()
     );
     let mut input = &buffer[..];
     // let n = 3;
@@ -97,10 +98,15 @@ fn read_file(filename: &str) -> std::io::Result<()> {
 }
 
 fn main() -> Result<(), std::boxed::Box<dyn Error>> {
-    // match read_file("/home/tk/bin/bisq/docs/autosetup-regtest-dao/regtest/blocks/blk00000.dat") {
-    match read_file("/home/tk/.bitcoin/blocks/blk02063.dat") {
-        // match read_file("/home/tk/.bitcoin/blocks/blk02063.dat") {
-        // match read_file(".gitignore") {
+    let mut args = std::env::args_os();
+    args.next().expect("Not even zeroth argument given");
+    let block_file = args.next().unwrap_or_else(|| {
+        let home_dir = std::env::var_os("HOME").expect("HOME environment variable is missing");
+        let mut block_file = PathBuf::from(home_dir);
+        block_file.push(".bitcoin/blocks/blk02063.dat");
+        block_file.into()
+    });
+    match read_file(&block_file) {
         Ok(_) => println!("all went fine!"),
         // Err(e) => println!("Error is e")
         Err(e) => println!("Error is {:?}", e),
