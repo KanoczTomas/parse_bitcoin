@@ -18,3 +18,5 @@ pub use self::transaction::Transaction;
 pub use self::transaction::TransactionBuilder;
 mod block;
 pub use self::block::Block;
+mod network;
+pub use network::Network;
