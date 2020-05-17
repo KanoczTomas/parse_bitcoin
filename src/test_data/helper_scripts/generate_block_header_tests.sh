@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 if [[ $# -ne 1 ]];then
   echo "usage: $0 <file.rpc>"
   exit 1
@@ -26,7 +24,7 @@ function generate_block_header_tests(){
   echo -en "assert_eq!(header.version, $version);\n"
   echo -en "assert_eq!(header.prev_block_hash, Hash256::new(&hex::decode(\"$(echo $prev_block_hash|./endian.sh)\").unwrap()));\n"
   echo -en "assert_eq!(header.merkle_root_hash, Hash256::new(&hex::decode(\"$(echo $merkle_root_hash|./endian.sh)\").unwrap()));\n"
-  echo -en "assert_eq!(header.time, $time);\n"
+  echo -en "assert_eq!(header.time.0, $time);\n"
   echo -en "assert_eq!(header.bits, Bytes::new(&hex::decode(\"$(echo $bits|./endian.sh)\").unwrap()));\n"
   echo -en "assert_eq!(header.nonce, Bytes::new(&hex::decode(\"$(echo $nonce|./endian.sh)\").unwrap()));\n"
   echo -en "assert_eq!(header.hash, Hash256::new(&hex::decode(\"$(echo $hash|./endian.sh)\").unwrap()));\n"
