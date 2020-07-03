@@ -1,5 +1,5 @@
 use crate::{
-    types::{BlockHeader, BlockHeaderBuilder, BlockVersion},
+    types::{BlockHeader, BlockHeaderBuilder, BlockVersion, BlockTime},
     utils::hash256
 };
 use nom::{
@@ -26,7 +26,7 @@ pub fn parse_block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
             .version(BlockVersion(version))
             .prev_block_hash(prev_block_hash)
             .merkle_root_hash(merkle_root_hash)
-            .time(time)
+            .time(BlockTime(time))
             .bits(bits)
             .nonce(nonce)
             .hash(hash256(block_header_raw))
@@ -62,7 +62,7 @@ mod test {
                     .unwrap()
             )
         );
-        assert_eq!(header.time, 1576880064);
+        assert_eq!(header.time.0, 1576880064);
         assert_eq!(header.bits, Bytes::new(&hex::decode("d0bc1517").unwrap()));
         assert_eq!(header.nonce, Bytes::new(&hex::decode("6129429F").unwrap()));
         assert_eq!(
@@ -92,7 +92,7 @@ mod test {
                     .unwrap()
             )
         );
-        assert_eq!(header.time, 1576151029);
+        assert_eq!(header.time.0, 1576151029);
         assert_eq!(header.bits, Bytes::new(&hex::decode("d2db1517").unwrap()));
         assert_eq!(header.nonce, Bytes::new(&hex::decode("9AB9308D").unwrap()));
         assert_eq!(
@@ -122,7 +122,7 @@ mod test {
                     .unwrap()
             )
         );
-        assert_eq!(header.time, 1231006505);
+        assert_eq!(header.time.0, 1231006505);
         assert_eq!(header.bits, Bytes::new(&hex::decode("ffff001d").unwrap()));
         assert_eq!(header.nonce, Bytes::new(&hex::decode("1DAC2B7C").unwrap()));
         assert_eq!(

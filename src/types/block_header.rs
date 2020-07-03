@@ -1,6 +1,7 @@
 use crate::types::Bytes;
 use crate::types::Hash256;
 use crate::types::BlockVersion;
+use crate::types::BlockTime;
 use chrono::prelude::*;
 use std::convert::TryInto;
 
@@ -9,8 +10,7 @@ pub struct BlockHeader {
     pub version: BlockVersion,
     pub prev_block_hash: Hash256,
     pub merkle_root_hash: Hash256,
-    pub time_str: String,
-    pub time: u32,
+    pub time: BlockTime,
     pub bits: Bytes,
     pub nonce: Bytes,
     pub hash: Hash256,
@@ -21,7 +21,7 @@ impl BlockHeader {
         v: BlockVersion,
         pbh: &[u8],
         mrh: &[u8],
-        t: u32,
+        t: BlockTime,
         b: &[u8],
         n: &[u8],
         h: Hash256,
@@ -31,9 +31,6 @@ impl BlockHeader {
             prev_block_hash: Hash256::new(pbh),
             merkle_root_hash: Hash256::new(mrh),
             time: t,
-            time_str: chrono::Utc
-                .timestamp(t.try_into().unwrap(), 0u32)
-                .to_rfc2822(),
             bits: Bytes::new(b),
             nonce: Bytes::new(n),
             hash: h,
@@ -47,8 +44,7 @@ impl std::default::Default for BlockHeader {
             version: BlockVersion(0),
             prev_block_hash: Hash256::default(),
             merkle_root_hash: Hash256::default(),
-            time_str: String::new(),
-            time: 0,
+            time: BlockTime(0),
             bits: Bytes::default(),
             nonce: Bytes::default(),
             hash: Hash256::default(),
@@ -78,13 +74,8 @@ impl BlockHeaderBuilder {
         self.blkh.merkle_root_hash = hash.into();
         self
     }
-    pub fn time(&mut self, time: u32) -> &mut Self {
+    pub fn time(&mut self, time: BlockTime) -> &mut Self {
         self.blkh.time = time;
-        self.blkh.time_str.push_str(
-            &chrono::Utc
-                .timestamp(time.try_into().unwrap(), 0u32)
-                .to_rfc2822(),
-        );
         self
     }
     pub fn bits<B: Into<Bytes>>(&mut self, bits: B) -> &mut Self {
@@ -104,7 +95,6 @@ impl BlockHeaderBuilder {
             version: self.blkh.version,
             prev_block_hash: self.blkh.prev_block_hash,
             merkle_root_hash: self.blkh.merkle_root_hash,
-            time_str: self.blkh.time_str.clone(),
             time: self.blkh.time,
             bits: self.blkh.bits.clone(),
             nonce: self.blkh.nonce.clone(),

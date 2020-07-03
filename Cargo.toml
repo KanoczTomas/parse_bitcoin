@@ -8,7 +8,10 @@ edition = "2018"
 
 [dependencies]
 nom="5"
-hex="0.4.0"
 chrono="0.4"
 ring="0.16.9"
 partial_application="0.2.0"
+displaydoc = { version = "0.1.6", optional = true }
+
+[dev-dependencies]
+hex="0.4.0"
