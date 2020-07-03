@@ -21,7 +21,7 @@ function generate_block_header_tests(){
 
   echo -en "let data = include_bytes!(\"$test_data_dir$(echo $file|sed 's/^..\///;s/\.rpc/\.bin/g')\");\n"
   echo -en "let (_, header) = parse_block_header(data).unwrap();\n"
-  echo -en "assert_eq!(header.version, $version);\n"
+  echo -en "assert_eq!(header.version.0, $version);\n"
   echo -en "assert_eq!(header.prev_block_hash, Hash256::new(&hex::decode(\"$(echo $prev_block_hash|./endian.sh)\").unwrap()));\n"
   echo -en "assert_eq!(header.merkle_root_hash, Hash256::new(&hex::decode(\"$(echo $merkle_root_hash|./endian.sh)\").unwrap()));\n"
   echo -en "assert_eq!(header.time.0, $time);\n"
