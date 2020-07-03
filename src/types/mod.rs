@@ -5,6 +5,8 @@ pub use self::bytes::Bytes;
 mod block_header;
 pub use self::block_header::BlockHeader;
 pub use self::block_header::BlockHeaderBuilder;
+mod block_version;
+pub use block_version::BlockVersion;
 mod block_time;
 pub use block_time::BlockTime;
 mod tx_input;

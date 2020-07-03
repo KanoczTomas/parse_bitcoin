@@ -1,5 +1,5 @@
 use crate::{
-    types::{BlockHeader, BlockHeaderBuilder, BlockTime},
+    types::{BlockHeader, BlockHeaderBuilder, BlockVersion, BlockTime},
     utils::hash256
 };
 use nom::{
@@ -23,7 +23,7 @@ pub fn parse_block_header(input: &[u8]) -> IResult<&[u8], BlockHeader> {
     Ok((
         i,
         BlockHeaderBuilder::new()
-            .version(version)
+            .version(BlockVersion(version))
             .prev_block_hash(prev_block_hash)
             .merkle_root_hash(merkle_root_hash)
             .time(BlockTime(time))
@@ -47,7 +47,7 @@ mod test {
             "../test_data/blk_0000000000000000000215160a3490f82c7203d9683802148a56282d1f80993d.bin"
         );
         let (_, header) = parse_block_header(data).unwrap();
-        assert_eq!(header.version, 536870912);
+        assert_eq!(header.version.0, 536870912);
         assert_eq!(
             header.prev_block_hash,
             Hash256::new(
@@ -77,7 +77,7 @@ mod test {
             "../test_data/blk_0000000000000000000b0a682f47f187a712c42badd4ca1989c494d401457c3f.bin"
         );
         let (_, header) = parse_block_header(data).unwrap();
-        assert_eq!(header.version, 1073725440);
+        assert_eq!(header.version.0, 1073725440);
         assert_eq!(
             header.prev_block_hash,
             Hash256::new(
@@ -107,7 +107,7 @@ mod test {
             "../test_data/blk_000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f.bin"
         );
         let (_, header) = parse_block_header(data).unwrap();
-        assert_eq!(header.version, 1);
+        assert_eq!(header.version.0, 1);
         assert_eq!(
             header.prev_block_hash,
             Hash256::new(
